@@ -24,6 +24,9 @@ export interface ModuleNodeData {
     qlen: number;
     isQueueFull: boolean;
   };
+  // Validation state
+  validationErrors?: number;
+  validationWarnings?: number;
   [key: string]: unknown; // Allow index signature for React Flow compatibility
 }
 
@@ -38,6 +41,7 @@ interface CanvasState {
   nodes: ModuleNode[];
   edges: Edge[];
   selectedNodeId: string | null;
+  centerTarget: string | null; // Node ID to center on
 }
 
 interface CanvasActions {
@@ -51,8 +55,16 @@ interface CanvasActions {
   addEdge: (connection: Connection) => void;
   removeEdge: (id: string) => void;
 
+  // Validation
+  updateNodeValidation: (nodeId: string, errors: number, warnings: number) => void;
+  clearAllValidation: () => void;
+
   // Selection
   selectNode: (id: string | null) => void;
+
+  // Navigation
+  centerOnNode: (id: string) => void;
+  clearCenterTarget: () => void;
 
   // React Flow callbacks
   onNodesChange: (changes: NodeChange[]) => void;
@@ -67,6 +79,7 @@ const initialState: CanvasState = {
   nodes: [],
   edges: [],
   selectedNodeId: null,
+  centerTarget: null,
 };
 
 export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => ({
@@ -143,8 +156,46 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
     }));
   },
 
+  updateNodeValidation: (nodeId, errors, warnings) => {
+    set((state) => ({
+      nodes: state.nodes.map((n) =>
+        n.id === nodeId
+          ? {
+              ...n,
+              data: {
+                ...n.data,
+                validationErrors: errors,
+                validationWarnings: warnings,
+              },
+            }
+          : n
+      ),
+    }));
+  },
+
+  clearAllValidation: () => {
+    set((state) => ({
+      nodes: state.nodes.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          validationErrors: 0,
+          validationWarnings: 0,
+        },
+      })),
+    }));
+  },
+
   selectNode: (id) => {
     set({ selectedNodeId: id });
+  },
+
+  centerOnNode: (id) => {
+    set({ centerTarget: id });
+  },
+
+  clearCenterTarget: () => {
+    set({ centerTarget: null });
   },
 
   onNodesChange: (changes) => {

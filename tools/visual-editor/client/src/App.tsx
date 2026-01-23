@@ -4,6 +4,7 @@ import { StatusBar } from './components/Toolbar/StatusBar';
 import { ModulePalette } from './components/Panels/ModulePalette';
 import { PropertyPanel } from './components/Panels/PropertyPanel';
 import { JsonView } from './components/Panels/JsonView';
+import { ProblemsPanel } from './components/Panels/ProblemsPanel';
 import { Canvas } from './components/Canvas/Canvas';
 import { api } from './services/api';
 import { usePipelineStore } from './store/pipelineStore';
@@ -46,53 +47,58 @@ function App() {
       <Toolbar />
 
       {/* Main Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel: Module Palette */}
-        <aside className="w-64 border-r border-border bg-muted/30 overflow-y-auto">
-          {loading && (
-            <div className="p-4 text-center text-muted-foreground">
-              Loading modules...
-            </div>
-          )}
-          {error && (
-            <div className="p-4 text-center text-destructive">
-              {error}
-            </div>
-          )}
-          {schema && <ModulePalette modules={schema} />}
-        </aside>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Panel: Module Palette */}
+          <aside className="w-64 border-r border-border bg-muted/30 overflow-y-auto">
+            {loading && (
+              <div className="p-4 text-center text-muted-foreground">
+                Loading modules...
+              </div>
+            )}
+            {error && (
+              <div className="p-4 text-center text-destructive">
+                {error}
+              </div>
+            )}
+            {schema && <ModulePalette modules={schema} />}
+          </aside>
 
-        {/* Center: Canvas and/or JSON View based on viewMode */}
-        {viewMode === 'visual' && (
-          <main className="flex-1 bg-gray-50">
-            <Canvas schema={schema} />
-          </main>
-        )}
-
-        {viewMode === 'json' && (
-          <main className="flex-1 bg-gray-50">
-            <JsonView />
-          </main>
-        )}
-
-        {viewMode === 'split' && (
-          <>
+          {/* Center: Canvas and/or JSON View based on viewMode */}
+          {viewMode === 'visual' && (
             <main className="flex-1 bg-gray-50">
               <Canvas schema={schema} />
             </main>
-            <div className="w-px bg-border" />
-            <main className="w-1/3 bg-gray-50">
+          )}
+
+          {viewMode === 'json' && (
+            <main className="flex-1 bg-gray-50">
               <JsonView />
             </main>
-          </>
-        )}
+          )}
 
-        {/* Right Panel: Property Panel (visible in visual and split modes) */}
-        {viewMode !== 'json' && (
-          <aside className="w-72 border-l border-border bg-muted/30 overflow-y-auto">
-            <PropertyPanel schema={schema} />
-          </aside>
-        )}
+          {viewMode === 'split' && (
+            <>
+              <main className="flex-1 bg-gray-50">
+                <Canvas schema={schema} />
+              </main>
+              <div className="w-px bg-border" />
+              <main className="w-1/3 bg-gray-50">
+                <JsonView />
+              </main>
+            </>
+          )}
+
+          {/* Right Panel: Property Panel (visible in visual and split modes) */}
+          {viewMode !== 'json' && (
+            <aside className="w-72 border-l border-border bg-muted/30 overflow-y-auto">
+              <PropertyPanel schema={schema} />
+            </aside>
+          )}
+        </div>
+
+        {/* Problems Panel */}
+        <ProblemsPanel />
       </div>
 
       {/* Status Bar */}

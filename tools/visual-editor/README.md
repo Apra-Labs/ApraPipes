@@ -19,6 +19,14 @@ ApraPipes Studio provides a web-based graphical interface for creating, editing,
 - **View Modes**: Visual, JSON, or Split view options
 - **Workspace Management**: New, Open, Save workspace operations
 
+### Phase 2 (In Progress)
+
+- **Pipeline Validation**: Validate pipeline configuration against schema
+- **Problems Panel**: View validation issues (errors, warnings, info)
+- **Visual Error Feedback**: Nodes show error/warning badges
+- **Click to Navigate**: Click an issue to jump to the affected node
+- **Validation API**: `POST /api/validate` endpoint for backend validation
+
 ## Getting Started
 
 ### Prerequisites
@@ -117,7 +125,7 @@ tools/visual-editor/
 │   ├── src/
 │   │   ├── components/     # UI components
 │   │   │   ├── Canvas/     # React Flow canvas, ModuleNode
-│   │   │   ├── Panels/     # ModulePalette, PropertyPanel, JsonView
+│   │   │   ├── Panels/     # ModulePalette, PropertyPanel, JsonView, ProblemsPanel
 │   │   │   └── Toolbar/    # Toolbar, StatusBar
 │   │   ├── store/          # Zustand state management
 │   │   │   ├── canvasStore.ts      # Canvas nodes/edges
@@ -132,7 +140,8 @@ tools/visual-editor/
 │   │   ├── api/            # REST API routes
 │   │   ├── services/       # Business logic
 │   │   │   ├── SchemaLoader.ts     # Module schema loading
-│   │   │   └── WorkspaceManager.ts # File I/O
+│   │   │   ├── WorkspaceManager.ts # File I/O
+│   │   │   └── Validator.ts        # Pipeline validation
 │   │   └── utils/          # Logging, helpers
 │   └── package.json
 └── README.md
@@ -146,6 +155,7 @@ tools/visual-editor/
 | POST | /api/workspace/load | Load workspace file |
 | POST | /api/workspace/save | Save workspace file |
 | GET | /api/workspace/list | List workspace files |
+| POST | /api/validate | Validate pipeline configuration |
 
 ## Development
 

@@ -34,19 +34,25 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
   const categoryColorClass = getCategoryColor(data.category);
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
 
-  const statusColors: Record<string, string> = {
-    idle: 'border-gray-300',
-    running: 'border-green-500 shadow-green-200',
-    error: 'border-red-500 shadow-red-200',
+  const hasErrors = (data.validationErrors ?? 0) > 0;
+  const hasWarnings = (data.validationWarnings ?? 0) > 0;
+
+  // Determine border color based on status and validation
+  const getBorderClass = () => {
+    if (hasErrors) return 'border-red-500 shadow-red-100';
+    if (hasWarnings) return 'border-yellow-500 shadow-yellow-100';
+    if (data.status === 'running') return 'border-green-500 shadow-green-200';
+    if (data.status === 'error') return 'border-red-500 shadow-red-200';
+    return 'border-gray-300';
   };
 
   return (
     <div
       className={`
         bg-white rounded-lg shadow-md border-2 min-w-[180px]
-        ${statusColors[data.status] || statusColors.idle}
+        ${getBorderClass()}
         ${selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
-        ${data.status === 'running' ? 'shadow-lg' : ''}
+        ${data.status === 'running' || hasErrors ? 'shadow-lg' : ''}
       `}
     >
       {/* Header */}
@@ -55,9 +61,27 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
           <span className="text-xs font-medium uppercase opacity-80">
             {data.category}
           </span>
-          {data.status === 'error' && (
-            <span className="text-xs">⚠️</span>
-          )}
+          <div className="flex items-center gap-1">
+            {hasErrors && (
+              <span
+                className="inline-flex items-center justify-center w-5 h-5 text-xs bg-red-500 text-white rounded-full"
+                title={`${data.validationErrors} error(s)`}
+              >
+                {data.validationErrors}
+              </span>
+            )}
+            {hasWarnings && (
+              <span
+                className="inline-flex items-center justify-center w-5 h-5 text-xs bg-yellow-500 text-white rounded-full"
+                title={`${data.validationWarnings} warning(s)`}
+              >
+                {data.validationWarnings}
+              </span>
+            )}
+            {data.status === 'error' && !hasErrors && (
+              <span className="text-xs">⚠️</span>
+            )}
+          </div>
         </div>
         <h3 className="font-semibold text-sm truncate" title={data.type}>
           {data.label || data.type}

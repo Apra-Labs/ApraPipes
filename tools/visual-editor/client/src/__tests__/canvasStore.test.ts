@@ -166,4 +166,50 @@ describe('canvasStore', () => {
       expect(getState().selectedNodeId).toBeNull();
     });
   });
+
+  describe('validation', () => {
+    it('updates node validation state', () => {
+      const id = getState().addNode('TestModule', mockSchema);
+
+      getState().updateNodeValidation(id, 2, 1);
+
+      const node = getState().nodes.find((n) => n.id === id);
+      expect(node?.data.validationErrors).toBe(2);
+      expect(node?.data.validationWarnings).toBe(1);
+    });
+
+    it('clears all validation state', () => {
+      const id1 = getState().addNode('TestModule', mockSchema);
+      const id2 = getState().addNode('Transform', mockTransformSchema);
+
+      getState().updateNodeValidation(id1, 2, 0);
+      getState().updateNodeValidation(id2, 0, 3);
+
+      getState().clearAllValidation();
+
+      const node1 = getState().nodes.find((n) => n.id === id1);
+      const node2 = getState().nodes.find((n) => n.id === id2);
+      expect(node1?.data.validationErrors).toBe(0);
+      expect(node1?.data.validationWarnings).toBe(0);
+      expect(node2?.data.validationErrors).toBe(0);
+      expect(node2?.data.validationWarnings).toBe(0);
+    });
+
+    it('sets centerTarget', () => {
+      const id = getState().addNode('TestModule', mockSchema);
+
+      getState().centerOnNode(id);
+
+      expect(getState().centerTarget).toBe(id);
+    });
+
+    it('clears centerTarget', () => {
+      const id = getState().addNode('TestModule', mockSchema);
+      getState().centerOnNode(id);
+
+      getState().clearCenterTarget();
+
+      expect(getState().centerTarget).toBeNull();
+    });
+  });
 });

@@ -1,6 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { usePipelineStore } from '../store/pipelineStore';
 import type { ModuleSchema } from '../types/schema';
+
+// Mock fetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 const mockSchema: Record<string, ModuleSchema> = {
   TestSource: {
@@ -237,6 +241,103 @@ describe('pipelineStore', () => {
 
       getState().markClean();
       expect(getState().isDirty).toBe(false);
+    });
+  });
+
+  describe('validation', () => {
+    beforeEach(() => {
+      mockFetch.mockReset();
+    });
+
+    it('has initial validation state', () => {
+      expect(getState().validationResult).toBeNull();
+      expect(getState().isValidating).toBe(false);
+    });
+
+    it('validates pipeline successfully', async () => {
+      const mockResult = {
+        valid: true,
+        issues: [],
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      });
+
+      const result = await getState().validate();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:3000/api/validate',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+      expect(result).toEqual(mockResult);
+      expect(getState().validationResult).toEqual(mockResult);
+      expect(getState().isValidating).toBe(false);
+    });
+
+    it('handles validation with issues', async () => {
+      const mockResult = {
+        valid: false,
+        issues: [
+          {
+            level: 'error',
+            code: 'E101',
+            message: 'Unknown module type',
+            location: 'modules.test',
+          },
+        ],
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      });
+
+      const result = await getState().validate();
+
+      expect(result.valid).toBe(false);
+      expect(result.issues).toHaveLength(1);
+      expect(getState().validationResult).toEqual(mockResult);
+    });
+
+    it('handles validation API error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        statusText: 'Internal Server Error',
+      });
+
+      const result = await getState().validate();
+
+      expect(result.valid).toBe(false);
+      expect(result.issues[0].code).toBe('E999');
+      expect(getState().isValidating).toBe(false);
+    });
+
+    it('handles network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await getState().validate();
+
+      expect(result.valid).toBe(false);
+      expect(getState().validationResult?.valid).toBe(false);
+    });
+
+    it('clears validation result', async () => {
+      const mockResult = { valid: true, issues: [] };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      });
+
+      await getState().validate();
+      expect(getState().validationResult).not.toBeNull();
+
+      getState().clearValidation();
+      expect(getState().validationResult).toBeNull();
     });
   });
 });

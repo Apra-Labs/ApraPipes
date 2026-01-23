@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import type { ModuleSchema, ModuleConfig, PipelineConfig } from '../types/schema';
+import type { ValidationResult, ValidationIssue } from '../types/validation';
+import { parseLocationModuleId } from '../types/validation';
+import { useCanvasStore } from './canvasStore';
 
 /**
  * Connection in the pipeline format expected by ApraPipes
@@ -16,6 +19,8 @@ interface PipelineState {
   config: PipelineConfig;
   schema: Record<string, ModuleSchema>;
   isDirty: boolean;
+  validationResult: ValidationResult | null;
+  isValidating: boolean;
 }
 
 /**
@@ -42,6 +47,10 @@ interface PipelineActions {
   // State management
   reset: () => void;
   markClean: () => void;
+
+  // Validation
+  validate: () => Promise<ValidationResult>;
+  clearValidation: () => void;
 }
 
 const initialConfig: PipelineConfig = {
@@ -53,7 +62,43 @@ const initialState: PipelineState = {
   config: initialConfig,
   schema: {},
   isDirty: false,
+  validationResult: null,
+  isValidating: false,
 };
+
+const API_BASE = 'http://localhost:3000';
+
+/**
+ * Sync validation issues with canvas node states
+ */
+function syncValidationWithCanvas(issues: ValidationIssue[]): void {
+  const canvasStore = useCanvasStore.getState();
+
+  // Clear all existing validation state
+  canvasStore.clearAllValidation();
+
+  // Count errors and warnings per module
+  const moduleIssues: Record<string, { errors: number; warnings: number }> = {};
+
+  for (const issue of issues) {
+    const moduleId = parseLocationModuleId(issue.location);
+    if (moduleId) {
+      if (!moduleIssues[moduleId]) {
+        moduleIssues[moduleId] = { errors: 0, warnings: 0 };
+      }
+      if (issue.level === 'error') {
+        moduleIssues[moduleId].errors++;
+      } else if (issue.level === 'warning') {
+        moduleIssues[moduleId].warnings++;
+      }
+    }
+  }
+
+  // Update each node's validation state
+  for (const [moduleId, counts] of Object.entries(moduleIssues)) {
+    canvasStore.updateNodeValidation(moduleId, counts.errors, counts.warnings);
+  }
+}
 
 /**
  * Pipeline store for managing the pipeline configuration
@@ -243,5 +288,51 @@ export const usePipelineStore = create<PipelineState & PipelineActions>((set, ge
 
   markClean: () => {
     set({ isDirty: false });
+  },
+
+  validate: async () => {
+    set({ isValidating: true });
+
+    try {
+      const { config } = get();
+      const response = await fetch(`${API_BASE}/api/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Validation failed: ${response.statusText}`);
+      }
+
+      const result: ValidationResult = await response.json();
+      set({ validationResult: result, isValidating: false });
+
+      // Sync validation state with canvas nodes
+      syncValidationWithCanvas(result.issues);
+
+      return result;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Validation error:', error);
+      const errorResult: ValidationResult = {
+        valid: false,
+        issues: [
+          {
+            level: 'error',
+            code: 'E999',
+            message: 'Failed to validate pipeline',
+            location: '',
+          },
+        ],
+      };
+      set({ validationResult: errorResult, isValidating: false });
+      return errorResult;
+    }
+  },
+
+  clearValidation: () => {
+    set({ validationResult: null });
+    useCanvasStore.getState().clearAllValidation();
   },
 }));

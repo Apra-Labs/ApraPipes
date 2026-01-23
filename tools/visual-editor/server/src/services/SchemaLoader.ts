@@ -183,7 +183,24 @@ class SchemaLoader {
     const schema = await this.load();
     return schema.modules[name];
   }
+
+  /**
+   * Get the full schema as a flat map of module names to schemas
+   */
+  async getSchema(): Promise<Record<string, ModuleSchema>> {
+    const schema = await this.load();
+    return schema.modules;
+  }
 }
 
+// Export class for testing and direct instantiation
+export { SchemaLoader };
+
 // Export singleton instance
-export const schemaLoader = new SchemaLoader();
+const schemaLoader = new SchemaLoader();
+
+export function getSchemaLoader(): SchemaLoader {
+  return schemaLoader;
+}
+
+export { schemaLoader };
