@@ -1,0 +1,283 @@
+import { useCallback, useState } from 'react';
+import { useCanvasStore } from '../../store/canvasStore';
+import { usePipelineStore } from '../../store/pipelineStore';
+import type { PropertySchema, ModuleSchema } from '../../types/schema';
+import {
+  IntInput,
+  FloatInput,
+  BoolCheckbox,
+  StringInput,
+  EnumDropdown,
+  JsonEditor,
+} from './PropertyEditors';
+
+interface PropertyPanelProps {
+  schema: Record<string, ModuleSchema> | null;
+}
+
+/**
+ * Property panel for editing selected module properties
+ */
+export function PropertyPanel({ schema }: PropertyPanelProps) {
+  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
+  const nodes = useCanvasStore((state) => state.nodes);
+  const updateNodeData = useCanvasStore((state) => state.updateNodeData);
+
+  const updateModuleProperty = usePipelineStore((state) => state.updateModuleProperty);
+  const pipelineConfig = usePipelineStore((state) => state.config);
+  const renameModule = usePipelineStore((state) => state.renameModule);
+
+  const [editingName, setEditingName] = useState(false);
+  const [tempName, setTempName] = useState('');
+
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const moduleSchema = selectedNode && schema ? schema[selectedNode.data.type] : null;
+  const moduleConfig = selectedNodeId ? pipelineConfig.modules[selectedNodeId] : null;
+
+  const handlePropertyChange = useCallback(
+    (key: string, value: unknown) => {
+      if (!selectedNodeId) return;
+      updateModuleProperty(selectedNodeId, key, value);
+    },
+    [selectedNodeId, updateModuleProperty]
+  );
+
+  const handleNameEdit = useCallback(() => {
+    if (selectedNode) {
+      setTempName(selectedNode.data.label);
+      setEditingName(true);
+    }
+  }, [selectedNode]);
+
+  const handleNameSave = useCallback(() => {
+    if (!selectedNodeId || !tempName.trim()) {
+      setEditingName(false);
+      return;
+    }
+
+    const newId = tempName.trim();
+    if (newId !== selectedNodeId) {
+      // Update canvas store
+      updateNodeData(selectedNodeId, { label: newId });
+      // Update pipeline store
+      renameModule(selectedNodeId, newId);
+    }
+    setEditingName(false);
+  }, [selectedNodeId, tempName, updateNodeData, renameModule]);
+
+  const handleNameKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleNameSave();
+      } else if (e.key === 'Escape') {
+        setEditingName(false);
+      }
+    },
+    [handleNameSave]
+  );
+
+  const getPropertyValue = (key: string, propSchema: PropertySchema): unknown => {
+    if (moduleConfig?.properties?.[key] !== undefined) {
+      return moduleConfig.properties[key];
+    }
+    // Return default from schema
+    if (propSchema.default !== undefined) {
+      switch (propSchema.type) {
+        case 'int':
+          return parseInt(propSchema.default, 10);
+        case 'float':
+          return parseFloat(propSchema.default);
+        case 'bool':
+          return propSchema.default === 'true';
+        case 'json':
+          try {
+            return JSON.parse(propSchema.default);
+          } catch {
+            return {};
+          }
+        default:
+          return propSchema.default;
+      }
+    }
+    // Return type-appropriate default
+    switch (propSchema.type) {
+      case 'int':
+        return 0;
+      case 'float':
+        return 0.0;
+      case 'bool':
+        return false;
+      case 'string':
+        return '';
+      case 'enum':
+        return propSchema.enum_values?.[0] ?? '';
+      case 'json':
+        return {};
+      default:
+        return '';
+    }
+  };
+
+  const renderPropertyEditor = (key: string, propSchema: PropertySchema) => {
+    const value = getPropertyValue(key, propSchema);
+
+    switch (propSchema.type) {
+      case 'int':
+        return (
+          <IntInput
+            key={key}
+            label={key}
+            value={value as number}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+      case 'float':
+        return (
+          <FloatInput
+            key={key}
+            label={key}
+            value={value as number}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+      case 'bool':
+        return (
+          <BoolCheckbox
+            key={key}
+            label={key}
+            value={value as boolean}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+      case 'string':
+        return (
+          <StringInput
+            key={key}
+            label={key}
+            value={value as string}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+      case 'enum':
+        return (
+          <EnumDropdown
+            key={key}
+            label={key}
+            value={value as string}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+      case 'json':
+        return (
+          <JsonEditor
+            key={key}
+            label={key}
+            value={value}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+      default:
+        return (
+          <StringInput
+            key={key}
+            label={key}
+            value={String(value)}
+            schema={propSchema}
+            onChange={(v) => handlePropertyChange(key, v)}
+          />
+        );
+    }
+  };
+
+  if (!selectedNode) {
+    return (
+      <div className="p-4">
+        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-4">
+          Properties
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Select a module to view its properties
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+        Properties
+      </h3>
+
+      {/* Module Name (Editable) */}
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-600">Module Name</label>
+        {editingName ? (
+          <input
+            type="text"
+            value={tempName}
+            onChange={(e) => setTempName(e.target.value)}
+            onBlur={handleNameSave}
+            onKeyDown={handleNameKeyDown}
+            autoFocus
+            className="w-full px-2 py-1 text-sm border border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        ) : (
+          <div
+            onClick={handleNameEdit}
+            className="w-full px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded cursor-pointer hover:bg-gray-100"
+          >
+            {selectedNode.data.label}
+          </div>
+        )}
+      </div>
+
+      {/* Module Type (Read-only) */}
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-600">Module Type</label>
+        <div className="px-2 py-1 text-sm bg-muted rounded font-mono">
+          {selectedNode.data.type}
+        </div>
+      </div>
+
+      {/* Category */}
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-600">Category</label>
+        <div className="text-sm capitalize">{selectedNode.data.category}</div>
+      </div>
+
+      {/* Description */}
+      {selectedNode.data.description && (
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600">Description</label>
+          <p className="text-sm text-gray-600">{selectedNode.data.description}</p>
+        </div>
+      )}
+
+      {/* Divider */}
+      {moduleSchema && Object.keys(moduleSchema.properties).length > 0 && (
+        <div className="border-t border-gray-200 pt-4">
+          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+            Configuration
+          </h4>
+          <div className="space-y-3">
+            {Object.entries(moduleSchema.properties).map(([key, propSchema]) =>
+              renderPropertyEditor(key, propSchema)
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Module ID (for debugging) */}
+      <div className="border-t border-gray-200 pt-4">
+        <label className="block text-xs font-medium text-gray-400">ID</label>
+        <p className="font-mono text-xs text-gray-400 break-all">{selectedNode.id}</p>
+      </div>
+    </div>
+  );
+}

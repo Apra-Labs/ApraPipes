@@ -1,9 +1,9 @@
 # ApraPipes Studio — Progress Tracker
 
-> **Last Updated:** 2026-01-22
-> **Current Phase:** Phase 1 - Core Editor (In Progress)
-> **Current Sprint:** Sprint 1.2 - Module Palette
-> **Next Action:** Implement drag-and-drop from palette to canvas
+> **Last Updated:** 2026-01-23
+> **Current Phase:** Phase 1 - Core Editor (Complete)
+> **Current Sprint:** Sprint 1.6 - Phase 1 Polish & Testing (Complete)
+> **Next Action:** Demo Phase 1, then start Phase 2 (Validation)
 
 ---
 
@@ -12,7 +12,7 @@
 | Phase | Status | Completion | Notes |
 |-------|--------|------------|-------|
 | **Planning** | ✅ Complete | 100% | All design docs created |
-| **Phase 1: Core Editor** | 🚧 In Progress | 30% | 3-4 weeks |
+| **Phase 1: Core Editor** | ✅ Complete | 100% | 3-4 weeks |
 | **Phase 2: Validation** | ⏳ Not Started | 0% | 2 weeks |
 | **Phase 3: Runtime** | ⏳ Not Started | 0% | 2-3 weeks |
 | **Phase 6: Polish** | ⏳ Not Started | 0% | 2-3 weeks |
@@ -28,7 +28,7 @@
 
 ---
 
-## Phase 1: Core Editor (30% Complete)
+## Phase 1: Core Editor (100% Complete)
 
 ### Sprint 1.1: Project Setup & Schema Loading
 **Status:** ✅ Complete
@@ -69,60 +69,76 @@
 ---
 
 ### Sprint 1.3: Canvas & Custom Nodes
-**Status:** ⏳ Not Started
+**Status:** ✅ Complete
 **Duration:** Week 2
 
-- [ ] React Flow canvas setup
-- [ ] Custom ModuleNode component
-- [ ] Render input/output handles
-- [ ] Category color-coding
-- [ ] Canvas store (Zustand)
-- [ ] Node selection
+- [x] React Flow canvas setup
+- [x] Custom ModuleNode component
+- [x] Render input/output handles
+- [x] Category color-coding
+- [x] Canvas store (Zustand)
+- [x] Node selection
+- [x] Drop handler for palette
+- [x] Tests (56/56 passing)
+- [x] Type check passing
+- [x] Coverage: stores 87%, services 100%
 
-**Blockers:** Depends on Sprint 1.2
+**Blockers:** None
+**Completion:** ✅ Sprint 1.3 COMPLETE
 
 ---
 
 ### Sprint 1.4: Connections & Property Panel
-**Status:** ⏳ Not Started
+**Status:** ✅ Complete
 **Duration:** Week 2
 
-- [ ] Connection creation (drag handles)
-- [ ] Property Panel component
-- [ ] Property editors (Int, Float, Bool, String, Enum, JSON)
-- [ ] Pipeline store (Zustand)
-- [ ] Module rename functionality
+- [x] Connection creation (drag handles)
+- [x] Property Panel component
+- [x] Property editors (Int, Float, Bool, String, Enum, JSON)
+- [x] Pipeline store (Zustand)
+- [x] Module rename functionality
+- [x] Tests (97/97 passing)
+- [x] Type check passing
+- [x] Coverage: stores 91%+, services 100%, editors 99%+
 
-**Blockers:** Depends on Sprint 1.3
+**Blockers:** None
+**Completion:** ✅ Sprint 1.4 COMPLETE
 
 ---
 
 ### Sprint 1.5: JSON View & Workspace
-**Status:** ⏳ Not Started
+**Status:** ✅ Complete
 **Duration:** Week 3
 
-- [ ] JSON View with Monaco Editor
-- [ ] View mode toggle (Visual | JSON | Split)
-- [ ] Workspace Manager backend
-- [ ] File operations (New, Open, Save)
-- [ ] Workspace store
+- [x] JSON View with Monaco Editor
+- [x] View mode toggle (Visual | JSON | Split)
+- [x] Workspace Manager backend
+- [x] File operations (New, Open, Save)
+- [x] Workspace store
+- [x] UI store for view mode
+- [x] Tests (124/124 passing)
+- [x] Type check passing
 
-**Blockers:** Depends on Sprint 1.4
+**Blockers:** None
+**Completion:** ✅ Sprint 1.5 COMPLETE
 
 ---
 
 ### Sprint 1.6: Phase 1 Polish & Testing
-**Status:** ⏳ Not Started
+**Status:** ✅ Complete
 **Duration:** Week 3-4
 
-- [ ] Styling & UX polish
-- [ ] Add tooltips for pins
-- [ ] Unit tests (stores)
-- [ ] Component tests
-- [ ] Integration tests
-- [ ] Documentation (README)
+- [x] Styling & UX polish
+- [x] Add tooltips for pins (PinTooltip component in ModuleNode)
+- [x] Unit tests (stores) - 91.55% coverage
+- [x] Component tests - 99%+ coverage for PropertyEditors
+- [x] Integration tests - workspaceStore tests added
+- [x] Documentation (README.md created)
+- [x] Tests: 143 total (117 client + 26 server)
+- [x] Lint and type-check passing
 
-**Blockers:** Depends on Sprint 1.5
+**Blockers:** None
+**Completion:** ✅ Sprint 1.6 COMPLETE
 
 ---
 
@@ -367,7 +383,7 @@
 | Milestone | Target Date | Status | Notes |
 |-----------|-------------|--------|-------|
 | **M0: Planning Complete** | 2026-01-22 | ✅ Complete | All design docs ready |
-| **M1: Phase 1 Complete** | Week 4 | ⏳ Pending | Core editor functional |
+| **M1: Phase 1 Complete** | Week 4 | ✅ Complete | Core editor functional |
 | **M2: Phase 2 Complete** | Week 5 | ⏳ Pending | Validation integrated |
 | **M3: Phase 3 Complete** | Week 8 | ⏳ Pending | Runtime monitoring live |
 | **M4: Phase 6 Complete** | Week 10 | ⏳ Pending | Polish features done |
@@ -387,33 +403,54 @@
 
 ## Recent Changes
 
+### 2026-01-23
+- ✅ **Phase 1 COMPLETE**
+- ✅ Sprint 1.6 Complete
+  - Pin tooltips showing name and frame types on hover
+  - workspaceStore tests added (19 tests)
+  - ESLint config updated for varsIgnorePattern
+  - README.md documentation created
+  - 143 tests total (117 client + 26 server)
+  - Store coverage: 91.55% (target: 80%+)
+  - Services coverage: 100%
+  - All lint and type checks passing
+
 ### 2026-01-22
+- ✅ Sprint 1.5 Complete
+  - JSON View with Monaco Editor
+  - View mode toggle (Visual | JSON | Split)
+  - Workspace Manager backend (save/load/create)
+  - File operations (New, Open, Save) with dialogs
+  - UI store for view mode
+  - Workspace store for file operations
+  - Path sanitization for security
+  - 124 tests passing (98 client + 26 server)
+- ✅ Sprint 1.4 Complete
+  - Connection creation (drag handles between nodes)
+  - Property Panel with module name editing
+  - Property editors (Int, Float, Bool, String, Enum, JSON)
+  - Pipeline store for serialization
+- ✅ Sprint 1.3 Complete
+  - React Flow canvas with drag-drop from palette
+  - Custom ModuleNode with handles, category colors, metrics display
+  - Canvas store (Zustand) for nodes, edges, selection
+- ✅ Sprint 1.2 Complete (nanoid for unique IDs)
+- ✅ Sprint 1.1 Complete (project setup, schema loading)
 - ✅ Completed all planning documents
-  - DESIGN_QUESTIONS.md (user answers recorded)
-  - SPECIFICATION.md (complete technical spec)
-  - ARCHITECTURE.md (system architecture)
-  - PROJECT_PLAN.md (sprint breakdown)
-  - README.md (project overview)
-  - PROGRESS.md (this document)
-- 📋 Ready to begin Phase 1 Sprint 1.1
 
 ---
 
 ## Next Actions
 
-**Immediate (Week 1):**
-1. Create `tools/visual-editor/` directory structure
-2. Initialize client project (Vite + React + TypeScript)
-3. Initialize server project (Express.js + TypeScript)
-4. Set up package.json workspaces
-5. Install dependencies
-6. Verify `schema_generator` has run and `modules.json` exists
-7. Implement SchemaLoader backend service
-8. Create GET /api/schema endpoint
-9. Verify dev servers run
+**Immediate:**
+1. ✅ Phase 1 Complete - Demo ready
+2. Begin Phase 2 (Validation)
 
-**Week 2-4:**
-- Continue Phase 1 sprints per PROJECT_PLAN.md
+**Phase 2 (Validation) First Steps:**
+1. Create Validator service on backend
+2. Add `POST /api/validate` endpoint
+3. Create ProblemsPanel component
+4. Visual error feedback on nodes/edges
 
 ---
 

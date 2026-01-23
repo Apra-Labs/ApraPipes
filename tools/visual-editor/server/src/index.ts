@@ -3,6 +3,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { config } from './config.js';
 import schemaRouter from './api/schema.js';
+import { workspaceRouter } from './api/workspace.js';
 import { createLogger } from './utils/logger.js';
 
 const logger = createLogger('Server');
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // API routes
 app.use('/api/schema', schemaRouter);
+app.use('/api/workspace', workspaceRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

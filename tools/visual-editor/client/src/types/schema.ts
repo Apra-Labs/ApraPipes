@@ -29,6 +29,24 @@ export interface SchemaResponse {
 }
 
 /**
+ * Pipeline configuration types for serialization
+ */
+export interface ModuleConfig {
+  type: string;
+  properties: Record<string, unknown>;
+}
+
+export interface PipelineConnection {
+  from: string; // Format: "moduleId.outputPinName"
+  to: string;   // Format: "moduleId.inputPinName"
+}
+
+export interface PipelineConfig {
+  modules: Record<string, ModuleConfig>;
+  connections: PipelineConnection[];
+}
+
+/**
  * Module categories for grouping in palette
  */
 export type ModuleCategory = 'source' | 'transform' | 'sink' | 'cuda' | 'other';

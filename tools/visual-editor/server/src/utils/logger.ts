@@ -51,3 +51,6 @@ export function createLogger(prefix: string) {
     },
   };
 }
+
+// Default logger instance
+export const logger = createLogger('App');

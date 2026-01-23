@@ -1,0 +1,111 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { ModuleNode } from '../components/Canvas/ModuleNode';
+import type { ModuleNodeData } from '../store/canvasStore';
+
+// Mock React Flow Handle component
+vi.mock('@xyflow/react', () => ({
+  Handle: ({ id, type }: { id: string; type: string }) => (
+    <div data-testid={`handle-${type}-${id}`} />
+  ),
+  Position: { Left: 'left', Right: 'right' },
+}));
+
+const createMockData = (overrides: Partial<ModuleNodeData> = {}): ModuleNodeData => ({
+  type: 'TestModule',
+  label: 'Test Module',
+  category: 'source',
+  description: 'A test module',
+  inputs: [],
+  outputs: [{ name: 'output', frame_types: ['RAW_IMAGE'] }],
+  properties: {},
+  status: 'idle',
+  ...overrides,
+});
+
+describe('ModuleNode', () => {
+  it('renders module with correct label', () => {
+    const data = createMockData({ label: 'My Module' });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByText('My Module')).toBeInTheDocument();
+  });
+
+  it('renders category badge', () => {
+    const data = createMockData({ category: 'transform' });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByText('transform')).toBeInTheDocument();
+  });
+
+  it('renders output handles', () => {
+    const data = createMockData({
+      outputs: [
+        { name: 'video', frame_types: ['RAW_IMAGE'] },
+        { name: 'audio', frame_types: ['RAW_AUDIO'] },
+      ],
+    });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByTestId('handle-source-video')).toBeInTheDocument();
+    expect(screen.getByTestId('handle-source-audio')).toBeInTheDocument();
+  });
+
+  it('renders input handles', () => {
+    const data = createMockData({
+      inputs: [{ name: 'input', frame_types: ['RAW_IMAGE'] }],
+    });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByTestId('handle-target-input')).toBeInTheDocument();
+  });
+
+  it('shows error indicator when status is error', () => {
+    const data = createMockData({ status: 'error' });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByText('⚠️')).toBeInTheDocument();
+  });
+
+  it('does not show error indicator when status is idle', () => {
+    const data = createMockData({ status: 'idle' });
+    render(<ModuleNode data={data} />);
+    expect(screen.queryByText('⚠️')).not.toBeInTheDocument();
+  });
+
+  it('shows metrics when running', () => {
+    const data = createMockData({
+      status: 'running',
+      metrics: { fps: 30, qlen: 5, isQueueFull: false },
+    });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByText('30')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
+  });
+
+  it('does not show metrics when idle', () => {
+    const data = createMockData({
+      status: 'idle',
+      metrics: { fps: 30, qlen: 5, isQueueFull: false },
+    });
+    render(<ModuleNode data={data} />);
+    expect(screen.queryByText('FPS:')).not.toBeInTheDocument();
+  });
+
+  it('applies selected styling when selected', () => {
+    const data = createMockData();
+    const { container } = render(<ModuleNode data={data} selected={true} />);
+    expect(container.firstChild).toHaveClass('ring-2');
+  });
+
+  it('shows placeholder when no pins defined', () => {
+    const data = createMockData({ inputs: [], outputs: [] });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByText('No pins defined')).toBeInTheDocument();
+  });
+
+  it('renders pin labels', () => {
+    const data = createMockData({
+      inputs: [{ name: 'video_in', frame_types: ['RAW_IMAGE'] }],
+      outputs: [{ name: 'video_out', frame_types: ['RAW_IMAGE'] }],
+    });
+    render(<ModuleNode data={data} />);
+    expect(screen.getByText('video_in')).toBeInTheDocument();
+    expect(screen.getByText('video_out')).toBeInTheDocument();
+  });
+});
