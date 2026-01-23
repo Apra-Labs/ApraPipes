@@ -2,11 +2,16 @@
  * SchemaLoader Service
  *
  * Loads module and frame type schemas from the aprapipes.node addon.
- * Falls back to mock data when the addon is not available.
+ * Falls back to schema.json when the addon is not available.
  */
 
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { createLogger } from '../utils/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const logger = createLogger('SchemaLoader');
 
@@ -113,119 +118,36 @@ interface AddonSchema {
 }
 
 // ============================================================
-// Mock schema data for development when addon is not available
+// Schema.json fallback loading
 // ============================================================
 
-const MOCK_SCHEMA: Schema = {
-  modules: {
-    TestSignalGenerator: {
-      category: 'source',
-      description: 'Generates test video signals for debugging',
-      version: '1.0',
-      tags: ['source', 'test', 'generator'],
-      inputs: [],
-      outputs: [{ name: 'output', frame_types: ['RawImagePlanar'] }],
-      properties: {
-        width: { type: 'int', default: '640', min: '1', max: '4096', description: 'Image width' },
-        height: { type: 'int', default: '480', min: '1', max: '4096', description: 'Image height' },
-        pattern: { type: 'string', default: 'GRADIENT', description: 'Test pattern type' },
-        maxFrames: { type: 'int', default: '0', min: '0', max: '2147483647', description: 'Max frames to generate (0=infinite)' },
-      },
-    },
-    FileReaderModule: {
-      category: 'source',
-      description: 'Reads frames from image files',
-      version: '1.0',
-      tags: ['source', 'file', 'reader'],
-      inputs: [],
-      outputs: [{ name: 'output', frame_types: ['Frame'] }],
-      properties: {
-        strFullFileNameWithPattern: {
-          type: 'string',
-          description: 'File path pattern (e.g., frame_*.jpg)',
-        },
-        readLoop: { type: 'bool', default: 'true', description: 'Loop when reaching end' },
-      },
-    },
-    FileWriterModule: {
-      category: 'sink',
-      description: 'Writes frames to image files',
-      version: '1.0',
-      tags: ['sink', 'file', 'writer'],
-      inputs: [{ name: 'input', frame_types: ['Frame'], required: true }],
-      outputs: [],
-      properties: {
-        strFullFileNameWithPattern: {
-          type: 'string',
-          description: 'Output file path pattern',
-        },
-        append: { type: 'bool', default: 'false', description: 'Append to existing file' },
-      },
-    },
-    ImageResizeCV: {
-      category: 'transform',
-      description: 'Resizes images to specified dimensions',
-      version: '1.0',
-      tags: ['transform', 'resize', 'image', 'opencv'],
-      inputs: [{ name: 'input', frame_types: ['RawImage'], required: true }],
-      outputs: [{ name: 'output', frame_types: ['RawImage'] }],
-      properties: {
-        width: { type: 'int', default: '0', min: '1', max: '8192', description: 'Target width' },
-        height: { type: 'int', default: '0', min: '1', max: '8192', description: 'Target height' },
-      },
-    },
-    ColorConversion: {
-      category: 'transform',
-      description: 'Converts between color formats',
-      version: '1.0',
-      tags: ['transform', 'color', 'conversion', 'opencv'],
-      inputs: [{ name: 'input', frame_types: ['RawImage', 'RawImagePlanar'], required: true }],
-      outputs: [{ name: 'output', frame_types: ['RawImage', 'RawImagePlanar'] }],
-      properties: {
-        conversionType: {
-          type: 'enum',
-          enum_values: ['RGB_TO_MONO', 'BGR_TO_MONO', 'BGR_TO_RGB', 'RGB_TO_BGR', 'RGB_TO_YUV420PLANAR', 'YUV420PLANAR_TO_RGB'],
-          default: 'RGB_TO_MONO',
-          description: 'Color conversion type',
-        },
-      },
-    },
-  },
-  frameTypes: {
-    Frame: {
-      parent: '',
-      description: 'Base frame type - all frames derive from this',
-      tags: ['base'],
-      subtypes: ['RawImage', 'EncodedImage', 'AnalyticsFrame'],
-    },
-    RawImage: {
-      parent: 'Frame',
-      description: 'Uncompressed image with pixel data',
-      tags: ['image', 'raw'],
-      ancestors: ['Frame'],
-      subtypes: ['RawImagePlanar'],
-    },
-    RawImagePlanar: {
-      parent: 'RawImage',
-      description: 'Planar format raw image',
-      tags: ['image', 'raw', 'planar'],
-      ancestors: ['RawImage', 'Frame'],
-    },
-    EncodedImage: {
-      parent: 'Frame',
-      description: 'Compressed/encoded image data',
-      tags: ['image', 'encoded'],
-      ancestors: ['Frame'],
-      subtypes: ['H264Data', 'HEVCData'],
-    },
-    H264Data: {
-      parent: 'EncodedImage',
-      description: 'H.264/AVC encoded video frame',
-      tags: ['video', 'encoded', 'h264'],
-      ancestors: ['EncodedImage', 'Frame'],
-    },
-  },
-};
+/**
+ * Load schema from the schema.json file
+ */
+function loadSchemaFromFile(): Schema | null {
+  // Try multiple possible locations for schema.json
+  const schemaPaths = [
+    path.resolve(process.cwd(), 'schema.json'),
+    path.resolve(process.cwd(), '..', 'schema.json'),
+    path.resolve(__dirname, '..', '..', '..', 'schema.json'),
+    path.resolve(__dirname, '..', '..', '..', '..', 'schema.json'),
+  ];
+
+  for (const schemaPath of schemaPaths) {
+    try {
+      if (fs.existsSync(schemaPath)) {
+        const content = fs.readFileSync(schemaPath, 'utf-8');
+        const data = JSON.parse(content) as AddonSchema;
+        logger.info(`Loaded schema from ${schemaPath}`);
+        return transformSchema(data);
+      }
+    } catch (err) {
+      logger.warn(`Failed to load schema from ${schemaPath}: ${err}`);
+    }
+  }
+
+  return null;
+}
 
 // ============================================================
 // Addon loading
@@ -262,7 +184,7 @@ function loadAddon(): boolean {
     }
   }
 
-  logger.warn('Could not load aprapipes.node addon, using mock data');
+  logger.warn('Could not load aprapipes.node addon, will try schema.json fallback');
   return false;
 }
 
@@ -383,9 +305,17 @@ class SchemaLoader {
       }
     }
 
-    // Fallback to mock data
-    logger.warn('Using mock schema data');
-    this.schema = MOCK_SCHEMA;
+    // Fallback to schema.json file
+    const fileSchema = loadSchemaFromFile();
+    if (fileSchema) {
+      this.schema = fileSchema;
+      logger.info(`Loaded schema from file: ${Object.keys(this.schema.modules).length} modules, ${Object.keys(this.schema.frameTypes).length} frame types`);
+      return this.schema;
+    }
+
+    // Ultimate fallback - empty schema
+    logger.error('No schema available - neither addon nor schema.json found');
+    this.schema = { modules: {}, frameTypes: {} };
     return this.schema;
   }
 

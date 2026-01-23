@@ -25,10 +25,10 @@ describe('SchemaLoader', () => {
     expect(Object.keys(schema.frameTypes).length).toBeGreaterThan(0);
   });
 
-  it('loads from addon or returns mock data', async () => {
+  it('loads from addon or schema.json fallback', async () => {
     const schema = await schemaLoader.load();
 
-    // Either addon or mock - should have TestSignalGenerator
+    // Either addon or schema.json - should have TestSignalGenerator
     expect(schema.modules).toHaveProperty('TestSignalGenerator');
     expect(schema.modules.TestSignalGenerator.category).toBe('source');
   });
