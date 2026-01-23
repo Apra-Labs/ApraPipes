@@ -5,6 +5,8 @@ import { config } from './config.js';
 import schemaRouter from './api/schema.js';
 import { workspaceRouter } from './api/workspace.js';
 import validateRouter from './api/validate.js';
+import { pipelineRouter } from './api/pipeline.js';
+import { getMetricsStream } from './websocket/MetricsStream.js';
 import { createLogger } from './utils/logger.js';
 
 const logger = createLogger('Server');
@@ -20,21 +22,28 @@ app.use(express.json());
 app.use('/api/schema', schemaRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/api/validate', validateRouter);
+app.use('/api/pipeline', pipelineRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Initialize WebSocket server for metrics streaming
+const metricsStream = getMetricsStream();
+metricsStream.initialize(server);
+
 // Start server
 server.listen(config.port, config.host, () => {
   logger.info(`ApraPipes Studio server running at http://${config.host}:${config.port}`);
+  logger.info('WebSocket available at ws://${config.host}:${config.port}/ws');
   logger.info('Press Ctrl+C to stop');
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   logger.info('Shutting down...');
+  metricsStream.close();
   server.close(() => {
     logger.info('Server stopped');
     process.exit(0);

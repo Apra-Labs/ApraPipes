@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { Download } from 'lucide-react';
 import { usePipelineStore } from '../../store/pipelineStore';
 import { useCanvasStore } from '../../store/canvasStore';
+import { useRuntimeStore } from '../../store/runtimeStore';
 import type { ValidationIssue } from '../../types/validation';
+import type { RuntimeError } from '../../types/runtime';
 import {
   getSeverityIcon,
   getSeverityColor,
@@ -12,7 +15,32 @@ import {
 /**
  * Filter tabs for the problems panel
  */
-type FilterType = 'all' | 'error' | 'warning' | 'info';
+type FilterType = 'all' | 'error' | 'warning' | 'info' | 'runtime';
+
+/**
+ * Extended issue type that includes source (validation or runtime)
+ */
+interface DisplayIssue extends ValidationIssue {
+  /** Source of the issue */
+  source: 'validation' | 'runtime';
+  /** Original timestamp for runtime errors */
+  timestamp?: number;
+}
+
+/**
+ * Convert a runtime error to a display issue format
+ */
+function runtimeErrorToDisplayIssue(error: RuntimeError): DisplayIssue {
+  return {
+    level: 'error',
+    code: error.code || 'R001',
+    message: error.message,
+    location: `modules.${error.moduleId}`,
+    suggestion: 'Check module configuration or input data',
+    source: 'runtime',
+    timestamp: error.timestamp,
+  };
+}
 
 /**
  * Individual issue row component
@@ -21,24 +49,40 @@ function IssueRow({
   issue,
   onClick,
 }: {
-  issue: ValidationIssue;
+  issue: DisplayIssue;
   onClick: () => void;
 }) {
+  // Use purple background for runtime errors
+  const bgClass = issue.source === 'runtime'
+    ? 'bg-purple-50 border-purple-200'
+    : getSeverityBgColor(issue.level);
+
+  // Format timestamp for runtime errors
+  const timeString = issue.timestamp
+    ? new Date(issue.timestamp).toLocaleTimeString()
+    : null;
+
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-3 py-2 border-b hover:bg-gray-50 transition-colors ${getSeverityBgColor(issue.level)}`}
+      className={`w-full text-left px-3 py-2 border-b hover:bg-gray-50 transition-colors ${bgClass}`}
     >
       <div className="flex items-start gap-2">
         <span className="flex-shrink-0 mt-0.5" aria-label={issue.level}>
-          {getSeverityIcon(issue.level)}
+          {issue.source === 'runtime' ? '⚡' : getSeverityIcon(issue.level)}
         </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-mono ${getSeverityColor(issue.level)}`}>
+            <span className={`text-xs font-mono ${issue.source === 'runtime' ? 'text-purple-600' : getSeverityColor(issue.level)}`}>
               {issue.code}
             </span>
+            {issue.source === 'runtime' && (
+              <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">runtime</span>
+            )}
             <span className="text-sm text-gray-900 truncate">{issue.message}</span>
+            {timeString && (
+              <span className="text-xs text-gray-400 ml-auto">{timeString}</span>
+            )}
           </div>
           {issue.location && (
             <div className="text-xs text-gray-500 font-mono mt-0.5 truncate">
@@ -81,6 +125,8 @@ function FilterButton({
         return 'bg-yellow-100 text-yellow-700';
       case 'info':
         return 'bg-blue-100 text-blue-700';
+      case 'runtime':
+        return 'bg-purple-100 text-purple-700';
       default:
         return 'bg-gray-200 text-gray-700';
     }
@@ -98,7 +144,7 @@ function FilterButton({
 
 /**
  * Problems Panel component
- * Displays validation issues with filtering and click-to-jump
+ * Displays validation issues and runtime errors with filtering and click-to-jump
  */
 export function ProblemsPanel() {
   const validationResult = usePipelineStore((state) => state.validationResult);
@@ -107,28 +153,81 @@ export function ProblemsPanel() {
   const selectNode = useCanvasStore((state) => state.selectNode);
   const centerOnNode = useCanvasStore((state) => state.centerOnNode);
 
+  // Runtime errors from runtimeStore
+  const runtimeErrors = useRuntimeStore((state) => state.errors);
+  const runtimeStatus = useRuntimeStore((state) => state.status);
+  const clearErrors = useRuntimeStore((state) => state.clearErrors);
+
   const [filter, setFilter] = useState<FilterType>('all');
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const issues = validationResult?.issues || [];
+  // Convert validation issues to display format
+  const validationIssues: DisplayIssue[] = (validationResult?.issues || []).map((issue) => ({
+    ...issue,
+    source: 'validation' as const,
+  }));
 
-  // Count issues by severity
-  const errorCount = issues.filter((i) => i.level === 'error').length;
-  const warningCount = issues.filter((i) => i.level === 'warning').length;
-  const infoCount = issues.filter((i) => i.level === 'info').length;
+  // Convert runtime errors to display format
+  const runtimeIssues: DisplayIssue[] = runtimeErrors.map(runtimeErrorToDisplayIssue);
 
-  // Filter issues
-  const filteredIssues =
-    filter === 'all' ? issues : issues.filter((i) => i.level === filter);
+  // Combine all issues
+  const allIssues: DisplayIssue[] = [...validationIssues, ...runtimeIssues];
+
+  // Count issues by type
+  const errorCount = validationIssues.filter((i) => i.level === 'error').length;
+  const warningCount = validationIssues.filter((i) => i.level === 'warning').length;
+  const infoCount = validationIssues.filter((i) => i.level === 'info').length;
+  const runtimeCount = runtimeIssues.length;
+
+  // Filter issues based on selected filter
+  const filteredIssues = (() => {
+    switch (filter) {
+      case 'all':
+        return allIssues;
+      case 'runtime':
+        return runtimeIssues;
+      case 'error':
+        return validationIssues.filter((i) => i.level === 'error');
+      case 'warning':
+        return validationIssues.filter((i) => i.level === 'warning');
+      case 'info':
+        return validationIssues.filter((i) => i.level === 'info');
+      default:
+        return allIssues;
+    }
+  })();
 
   // Handle clicking an issue
-  const handleIssueClick = (issue: ValidationIssue) => {
+  const handleIssueClick = (issue: DisplayIssue) => {
     const moduleId = parseLocationModuleId(issue.location);
     if (moduleId) {
       selectNode(moduleId);
       centerOnNode(moduleId);
     }
   };
+
+  // Export logs functionality
+  const handleExportLogs = useCallback(() => {
+    const logs = {
+      exportedAt: new Date().toISOString(),
+      pipelineStatus: runtimeStatus,
+      validationIssues: validationResult?.issues || [],
+      runtimeErrors: runtimeErrors.map((e) => ({
+        ...e,
+        timestampFormatted: new Date(e.timestamp).toISOString(),
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pipeline-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [runtimeStatus, validationResult, runtimeErrors]);
 
   if (isCollapsed) {
     return (
@@ -149,6 +248,11 @@ export function ProblemsPanel() {
                 {warningCount} warnings
               </span>
             )}
+            {runtimeCount > 0 && (
+              <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">
+                {runtimeCount} runtime
+              </span>
+            )}
             <span>▲</span>
           </div>
         </button>
@@ -166,7 +270,7 @@ export function ProblemsPanel() {
             <FilterButton
               type="all"
               label="All"
-              count={issues.length}
+              count={allIssues.length}
               active={filter === 'all'}
               onClick={() => setFilter('all')}
             />
@@ -191,6 +295,13 @@ export function ProblemsPanel() {
               active={filter === 'info'}
               onClick={() => setFilter('info')}
             />
+            <FilterButton
+              type="runtime"
+              label="Runtime"
+              count={runtimeCount}
+              active={filter === 'runtime'}
+              onClick={() => setFilter('runtime')}
+            />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -201,6 +312,25 @@ export function ProblemsPanel() {
           >
             {isValidating ? 'Validating...' : 'Validate'}
           </button>
+          {(runtimeErrors.length > 0 || validationResult) && (
+            <button
+              onClick={handleExportLogs}
+              className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 flex items-center gap-1"
+              title="Export logs"
+            >
+              <Download className="w-3 h-3" />
+              Export
+            </button>
+          )}
+          {runtimeErrors.length > 0 && (
+            <button
+              onClick={clearErrors}
+              className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+              title="Clear runtime errors"
+            >
+              Clear
+            </button>
+          )}
           <button
             onClick={() => setIsCollapsed(true)}
             className="p-1 text-gray-500 hover:text-gray-700"
@@ -213,13 +343,15 @@ export function ProblemsPanel() {
 
       {/* Issues list */}
       <div className="flex-1 overflow-y-auto">
-        {!validationResult ? (
+        {!validationResult && runtimeErrors.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm">
             Click "Validate" to check your pipeline
           </div>
         ) : filteredIssues.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-            {validationResult.valid ? (
+            {filter === 'runtime' ? (
+              'No runtime errors'
+            ) : validationResult?.valid && runtimeErrors.length === 0 ? (
               <span className="text-green-600">✓ No issues found</span>
             ) : (
               'No issues match the current filter'
@@ -229,7 +361,7 @@ export function ProblemsPanel() {
           <div>
             {filteredIssues.map((issue, index) => (
               <IssueRow
-                key={`${issue.code}-${issue.location}-${index}`}
+                key={`${issue.source}-${issue.code}-${issue.location}-${index}`}
                 issue={issue}
                 onClick={() => handleIssueClick(issue)}
               />

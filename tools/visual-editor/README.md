@@ -19,13 +19,24 @@ ApraPipes Studio provides a web-based graphical interface for creating, editing,
 - **View Modes**: Visual, JSON, or Split view options
 - **Workspace Management**: New, Open, Save workspace operations
 
-### Phase 2 (In Progress)
+### Phase 2 (Complete)
 
 - **Pipeline Validation**: Validate pipeline configuration against schema
 - **Problems Panel**: View validation issues (errors, warnings, info)
 - **Visual Error Feedback**: Nodes show error/warning badges
 - **Click to Navigate**: Click an issue to jump to the affected node
 - **Validation API**: `POST /api/validate` endpoint for backend validation
+
+### Phase 3 (Complete)
+
+- **Pipeline Lifecycle**: Create, start, stop, and delete pipelines
+- **WebSocket Metrics Stream**: Real-time health events from running pipelines
+- **Live Metrics Display**: FPS and queue length shown on running modules
+- **Status Indicators**: Visual status badges (idle, running, error)
+- **Runtime Errors**: Runtime errors displayed in Problems Panel
+- **Export Logs**: Download validation and runtime errors as JSON
+- **Connection Status**: WebSocket connection indicator in status bar
+- **Run/Stop Controls**: Toolbar buttons for pipeline execution
 
 ## Getting Started
 
@@ -131,17 +142,25 @@ tools/visual-editor/
 │   │   │   ├── canvasStore.ts      # Canvas nodes/edges
 │   │   │   ├── pipelineStore.ts    # Pipeline config
 │   │   │   ├── workspaceStore.ts   # File operations
+│   │   │   ├── runtimeStore.ts     # Pipeline runtime state
 │   │   │   └── uiStore.ts          # UI state
 │   │   ├── services/       # API client
+│   │   │   ├── api.ts              # REST API client
+│   │   │   └── websocket.ts        # WebSocket client
 │   │   └── types/          # TypeScript types
 │   └── package.json
 ├── server/                 # Express backend
 │   ├── src/
 │   │   ├── api/            # REST API routes
+│   │   │   ├── pipeline.ts         # Pipeline lifecycle routes
+│   │   │   └── validate.ts         # Validation routes
 │   │   ├── services/       # Business logic
 │   │   │   ├── SchemaLoader.ts     # Module schema loading
 │   │   │   ├── WorkspaceManager.ts # File I/O
-│   │   │   └── Validator.ts        # Pipeline validation
+│   │   │   ├── Validator.ts        # Pipeline validation
+│   │   │   └── PipelineManager.ts  # Pipeline lifecycle
+│   │   ├── websocket/      # WebSocket server
+│   │   │   └── MetricsStream.ts    # Real-time metrics
 │   │   └── utils/          # Logging, helpers
 │   └── package.json
 └── README.md
@@ -156,6 +175,24 @@ tools/visual-editor/
 | POST | /api/workspace/save | Save workspace file |
 | GET | /api/workspace/list | List workspace files |
 | POST | /api/validate | Validate pipeline configuration |
+| POST | /api/pipeline/create | Create a new pipeline |
+| POST | /api/pipeline/:id/start | Start a pipeline |
+| POST | /api/pipeline/:id/stop | Stop a pipeline |
+| GET | /api/pipeline/:id/status | Get pipeline status |
+| DELETE | /api/pipeline/:id | Delete a pipeline |
+| GET | /api/pipeline/list | List all pipelines |
+
+### WebSocket Events
+
+Connect to `/ws` for real-time pipeline metrics:
+
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| subscribe | Client → Server | Subscribe to pipeline events |
+| unsubscribe | Client → Server | Unsubscribe from pipeline events |
+| health | Server → Client | Module health metrics (FPS, queue) |
+| error | Server → Client | Runtime error from module |
+| status | Server → Client | Pipeline status change |
 
 ## Development
 
@@ -200,11 +237,12 @@ npm run type-check
 
 ## Roadmap
 
-- **Phase 2**: Validation - Pipeline validation with visual error feedback
-- **Phase 3**: Runtime - Pipeline execution and live metrics monitoring
+- ~~**Phase 1**: Core Editor - Visual pipeline editing~~ (Complete)
+- ~~**Phase 2**: Validation - Pipeline validation with visual error feedback~~ (Complete)
+- ~~**Phase 3**: Runtime - Pipeline execution and live metrics monitoring~~ (Complete)
+- **Phase 6**: Polish - Undo/redo, keyboard shortcuts, search (Next)
 - **Phase 4**: LLM Basic - AI-assisted pipeline generation
 - **Phase 5**: LLM Advanced - Iterative refinement and debugging
-- **Phase 6**: Polish - Undo/redo, keyboard shortcuts, search
 
 ## Contributing
 

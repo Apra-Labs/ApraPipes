@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ModuleNode } from '../components/Canvas/ModuleNode';
 import type { ModuleNodeData } from '../store/canvasStore';
+import { useRuntimeStore } from '../store/runtimeStore';
 
 // Mock React Flow Handle component
 vi.mock('@xyflow/react', () => ({
@@ -10,6 +11,14 @@ vi.mock('@xyflow/react', () => ({
   ),
   Position: { Left: 'left', Right: 'right' },
 }));
+
+// Reset runtime store before each test
+beforeEach(() => {
+  useRuntimeStore.setState({
+    status: 'IDLE',
+    moduleMetrics: {},
+  });
+});
 
 const createMockData = (overrides: Partial<ModuleNodeData> = {}): ModuleNodeData => ({
   type: 'TestModule',
@@ -59,32 +68,43 @@ describe('ModuleNode', () => {
   it('shows error indicator when status is error', () => {
     const data = createMockData({ status: 'error' });
     render(<ModuleNode data={data} />);
-    expect(screen.getByText('⚠️')).toBeInTheDocument();
+    // StatusBadge shows !! text when error and no validation errors
+    expect(screen.getByText('!!')).toBeInTheDocument();
   });
 
   it('does not show error indicator when status is idle', () => {
     const data = createMockData({ status: 'idle' });
     render(<ModuleNode data={data} />);
-    expect(screen.queryByText('⚠️')).not.toBeInTheDocument();
+    expect(screen.queryByText('!!')).not.toBeInTheDocument();
   });
 
-  it('shows metrics when running', () => {
+  it('shows metrics when runtime status is RUNNING', () => {
+    // Set runtime store to RUNNING with metrics
+    useRuntimeStore.setState({
+      status: 'RUNNING',
+      moduleMetrics: {
+        'Test Module': { fps: 30, qlen: 5, isQueueFull: false, timestamp: Date.now() },
+      },
+    });
+
     const data = createMockData({
-      status: 'running',
-      metrics: { fps: 30, qlen: 5, isQueueFull: false },
+      status: 'idle', // data.status doesn't matter when runtime is RUNNING
     });
     render(<ModuleNode data={data} />);
-    expect(screen.getByText('30')).toBeInTheDocument();
+    // fps is displayed with .toFixed(1)
+    expect(screen.getByText('30.0')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
-  it('does not show metrics when idle', () => {
+  it('does not show metrics when runtime status is IDLE', () => {
+    // Runtime store defaults to IDLE in beforeEach
     const data = createMockData({
       status: 'idle',
       metrics: { fps: 30, qlen: 5, isQueueFull: false },
     });
     render(<ModuleNode data={data} />);
-    expect(screen.queryByText('FPS:')).not.toBeInTheDocument();
+    // Metrics section is not shown when not running
+    expect(screen.queryByText('fps')).not.toBeInTheDocument();
   });
 
   it('applies selected styling when selected', () => {

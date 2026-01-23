@@ -1,51 +1,47 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Validator } from '../services/Validator.js';
-import { SchemaLoader } from '../services/SchemaLoader.js';
+import { SchemaLoader, type ModuleSchema } from '../services/SchemaLoader.js';
 import type { PipelineConfig } from '../types/validation.js';
 
-// Mock schema for testing
-const mockSchema = {
+// Mock schema for testing - must match PropertySchema types
+const mockSchema: Record<string, ModuleSchema> = {
   FileReaderModule: {
-    name: 'FileReaderModule',
     category: 'source',
     description: 'Reads files',
     inputs: [],
     outputs: [{ name: 'output', frame_types: ['raw_image'] }],
     properties: {
-      path: { type: 'string', required: true, default: '' },
-      loop: { type: 'bool', required: false, default: 'false' },
+      path: { type: 'string' as const, default: '' },
+      loop: { type: 'bool' as const, default: 'false' },
     },
   },
   ResizeModule: {
-    name: 'ResizeModule',
     category: 'transform',
     description: 'Resizes images',
     inputs: [{ name: 'input', frame_types: ['raw_image'] }],
     outputs: [{ name: 'output', frame_types: ['raw_image'] }],
     properties: {
-      width: { type: 'int', required: true, min: 1, max: 4096 },
-      height: { type: 'int', required: true, min: 1, max: 4096 },
+      width: { type: 'int' as const, min: '1', max: '4096' },
+      height: { type: 'int' as const, min: '1', max: '4096' },
     },
   },
   FileWriterModule: {
-    name: 'FileWriterModule',
     category: 'sink',
     description: 'Writes files',
     inputs: [{ name: 'input', frame_types: ['raw_image', 'encoded_image'] }],
     outputs: [],
     properties: {
-      path: { type: 'string', required: true },
-      format: { type: 'enum', required: false, options: ['jpg', 'png', 'bmp'] },
+      path: { type: 'string' as const },
+      format: { type: 'enum' as const, enum_values: ['jpg', 'png', 'bmp'] },
     },
   },
   EncoderModule: {
-    name: 'EncoderModule',
     category: 'transform',
     description: 'Encodes images',
     inputs: [{ name: 'input', frame_types: ['raw_image'] }],
     outputs: [{ name: 'output', frame_types: ['encoded_image'] }],
     properties: {
-      quality: { type: 'int', required: false, min: 0, max: 100, default: '90' },
+      quality: { type: 'int' as const, min: '0', max: '100', default: '90' },
     },
   },
 };
@@ -107,8 +103,8 @@ describe('Validator', () => {
     });
   });
 
-  describe('validate required properties', () => {
-    it('returns error for missing required property', async () => {
+  describe('validate properties without defaults', () => {
+    it('returns warning for missing property without default', async () => {
       const config: PipelineConfig = {
         modules: {
           resize: { type: 'ResizeModule', properties: { width: 640 } }, // missing height
@@ -118,11 +114,12 @@ describe('Validator', () => {
 
       const result = await validator.validate(config);
 
-      expect(result.valid).toBe(false);
-      expect(result.issues.some((i) => i.code === 'E301' && i.location.includes('height'))).toBe(true);
+      // Warnings don't make pipeline invalid
+      expect(result.issues.some((i) => i.code === 'W301' && i.location.includes('height'))).toBe(true);
+      expect(result.issues.find((i) => i.code === 'W301')?.level).toBe('warning');
     });
 
-    it('accepts when all required properties present', async () => {
+    it('no warning when all properties present', async () => {
       const config: PipelineConfig = {
         modules: {
           resize: { type: 'ResizeModule', properties: { width: 640, height: 480 } },
@@ -132,7 +129,7 @@ describe('Validator', () => {
 
       const result = await validator.validate(config);
 
-      expect(result.issues.some((i) => i.code === 'E301')).toBe(false);
+      expect(result.issues.some((i) => i.code === 'W301')).toBe(false);
     });
   });
 

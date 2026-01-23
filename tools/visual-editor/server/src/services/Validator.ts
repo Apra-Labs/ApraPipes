@@ -134,14 +134,15 @@ export class Validator {
     const properties = moduleConfig.properties || {};
     const schemaProps = moduleSchema.properties || {};
 
-    // Check for required properties
+    // Check for properties with no default (effectively required)
     for (const [propName, propDef] of Object.entries(schemaProps)) {
-      if (propDef.required && !(propName in properties)) {
+      // If a property has no default value and is not provided, it's a warning
+      if (propDef.default === undefined && !(propName in properties)) {
         issues.push(
           this.createIssue(
-            'E301',
+            'W301',
             `modules.${moduleId}.properties.${propName}`,
-            `Missing required property: ${propName}`
+            `Property ${propName} has no default and is not set`
           )
         );
       }
@@ -171,34 +172,37 @@ export class Validator {
 
       // Range validation for numbers
       if ((propDef.type === 'int' || propDef.type === 'float') && typeof propValue === 'number') {
-        if (propDef.min !== undefined && propValue < propDef.min) {
+        const minValue = propDef.min !== undefined ? parseFloat(propDef.min) : undefined;
+        const maxValue = propDef.max !== undefined ? parseFloat(propDef.max) : undefined;
+
+        if (minValue !== undefined && !isNaN(minValue) && propValue < minValue) {
           issues.push(
             this.createIssue(
               'E303',
               propLocation,
-              `Value ${propValue} is below minimum ${propDef.min}`
+              `Value ${propValue} is below minimum ${minValue}`
             )
           );
         }
-        if (propDef.max !== undefined && propValue > propDef.max) {
+        if (maxValue !== undefined && !isNaN(maxValue) && propValue > maxValue) {
           issues.push(
             this.createIssue(
               'E303',
               propLocation,
-              `Value ${propValue} exceeds maximum ${propDef.max}`
+              `Value ${propValue} exceeds maximum ${maxValue}`
             )
           );
         }
       }
 
       // Enum validation
-      if (propDef.type === 'enum' && propDef.options) {
-        if (!propDef.options.includes(String(propValue))) {
+      if (propDef.type === 'enum' && propDef.enum_values) {
+        if (!propDef.enum_values.includes(String(propValue))) {
           issues.push(
             this.createIssue(
               'E304',
               propLocation,
-              `Invalid value "${propValue}". Allowed: ${propDef.options.join(', ')}`
+              `Invalid value "${propValue}". Allowed: ${propDef.enum_values.join(', ')}`
             )
           );
         }

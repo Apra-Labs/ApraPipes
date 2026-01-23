@@ -1,7 +1,9 @@
-import { useCallback, useState } from 'react';
-import { Play, Square, Save, FolderOpen, FileJson, Settings, FilePlus } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { Play, Square, Save, FolderOpen, FileJson, Settings, FilePlus, Loader2 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useWorkspaceStore } from '../../store/workspaceStore';
+import { useRuntimeStore } from '../../store/runtimeStore';
+import { usePipelineStore } from '../../store/pipelineStore';
 
 /**
  * Main toolbar component with pipeline controls
@@ -16,9 +18,28 @@ export function Toolbar() {
   const saveWorkspace = useWorkspaceStore((state) => state.saveWorkspace);
   const openWorkspace = useWorkspaceStore((state) => state.openWorkspace);
 
+  // Runtime state
+  const runtimeStatus = useRuntimeStore((state) => state.status);
+  const isLoading = useRuntimeStore((state) => state.isLoading);
+  const createPipeline = useRuntimeStore((state) => state.createPipeline);
+  const startPipeline = useRuntimeStore((state) => state.startPipeline);
+  const stopPipeline = useRuntimeStore((state) => state.stopPipeline);
+  const deletePipeline = useRuntimeStore((state) => state.deletePipeline);
+  const connect = useRuntimeStore((state) => state.connect);
+  const pipelineId = useRuntimeStore((state) => state.pipelineId);
+
+  // Pipeline config
+  const pipelineConfig = usePipelineStore((state) => state.config);
+  const validatePipeline = usePipelineStore((state) => state.validate);
+
   const [openDialogVisible, setOpenDialogVisible] = useState(false);
   const [saveDialogVisible, setSaveDialogVisible] = useState(false);
   const [pathInput, setPathInput] = useState('');
+
+  // Connect to WebSocket on mount
+  useEffect(() => {
+    connect();
+  }, [connect]);
 
   const handleNew = useCallback(() => {
     if (isDirty) {
@@ -66,6 +87,51 @@ export function Toolbar() {
     }
   }, [pathInput, saveWorkspace]);
 
+  // Run pipeline
+  const handleRun = useCallback(async () => {
+    try {
+      // Create pipeline if we don't have one
+      if (!pipelineId) {
+        await createPipeline(pipelineConfig);
+      }
+      // Start the pipeline
+      await startPipeline();
+    } catch (error) {
+      alert(`Failed to run pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [pipelineId, pipelineConfig, createPipeline, startPipeline]);
+
+  // Stop pipeline
+  const handleStop = useCallback(async () => {
+    try {
+      await stopPipeline();
+      // Optionally delete after stopping
+      await deletePipeline();
+    } catch (error) {
+      alert(`Failed to stop pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [stopPipeline, deletePipeline]);
+
+  // Validate pipeline
+  const handleValidate = useCallback(async () => {
+    try {
+      const result = await validatePipeline();
+      if (result.valid) {
+        alert('Pipeline is valid!');
+      } else {
+        const errorCount = result.issues.filter((i) => i.level === 'error').length;
+        const warningCount = result.issues.filter((i) => i.level === 'warning').length;
+        alert(`Validation complete: ${errorCount} error(s), ${warningCount} warning(s)`);
+      }
+    } catch (error) {
+      alert(`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [validatePipeline]);
+
+  const canRun = runtimeStatus === 'IDLE' || runtimeStatus === 'STOPPED';
+  const canStop = runtimeStatus === 'RUNNING';
+  const hasModules = Object.keys(pipelineConfig.modules).length > 0;
+
   return (
     <>
       <header className="h-12 border-b border-border bg-background flex items-center px-4 gap-2">
@@ -94,16 +160,18 @@ export function Toolbar() {
         {/* Pipeline Controls */}
         <div className="flex items-center gap-1 ml-2">
           <ToolbarButton
-            icon={<Play className="w-4 h-4" />}
-            label="Run"
+            icon={isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            label={runtimeStatus === 'RUNNING' ? 'Running...' : 'Run'}
             variant="success"
-            disabled
+            disabled={!canRun || !hasModules || isLoading}
+            onClick={handleRun}
           />
           <ToolbarButton
             icon={<Square className="w-4 h-4" />}
             label="Stop"
             variant="danger"
-            disabled
+            disabled={!canStop || isLoading}
+            onClick={handleStop}
           />
         </div>
 
@@ -136,7 +204,12 @@ export function Toolbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-1">
-          <ToolbarButton icon={<FileJson className="w-4 h-4" />} label="Validate" disabled />
+          <ToolbarButton
+            icon={<FileJson className="w-4 h-4" />}
+            label="Validate"
+            disabled={!hasModules}
+            onClick={handleValidate}
+          />
           <ToolbarButton icon={<Settings className="w-4 h-4" />} label="Settings" disabled />
         </div>
       </header>

@@ -159,7 +159,7 @@ export function getErrorDefinition(code: string): ErrorDefinition | undefined {
 /**
  * Create a formatted error message with location
  */
-export function formatErrorMessage(code: string, location: string, details?: string): string {
+export function formatErrorMessage(code: string, _location: string, details?: string): string {
   const def = errorDefinitions[code];
   if (!def) {
     return details || 'Unknown error';

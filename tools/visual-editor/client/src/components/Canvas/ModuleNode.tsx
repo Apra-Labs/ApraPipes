@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { ModuleNodeData } from '../../store/canvasStore';
+import { useRuntimeStore } from '../../store/runtimeStore';
 import { getCategoryColor } from '../../types/schema';
 
 /**
@@ -28,11 +29,38 @@ interface ModuleNodeProps {
 }
 
 /**
+ * Status indicator badge component
+ */
+function StatusBadge({ status }: { status: 'idle' | 'running' | 'error' }) {
+  const colors = {
+    idle: 'bg-gray-400',
+    running: 'bg-green-500 animate-pulse',
+    error: 'bg-red-500',
+  };
+
+  return (
+    <span
+      className={`inline-block w-2 h-2 rounded-full ${colors[status]}`}
+      title={status.charAt(0).toUpperCase() + status.slice(1)}
+    />
+  );
+}
+
+/**
  * Custom node component for rendering pipeline modules
  */
 function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
   const categoryColorClass = getCategoryColor(data.category);
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
+
+  // Get runtime metrics from store
+  const runtimeStatus = useRuntimeStore((state) => state.status);
+  const runtimeMetrics = useRuntimeStore((state) => state.moduleMetrics[data.label] || null);
+
+  // Determine effective status (use runtime status if running, else data status)
+  const isRunning = runtimeStatus === 'RUNNING';
+  const effectiveStatus = isRunning ? 'running' : data.status;
+  const metrics = isRunning ? runtimeMetrics : data.metrics;
 
   const hasErrors = (data.validationErrors ?? 0) > 0;
   const hasWarnings = (data.validationWarnings ?? 0) > 0;
@@ -41,8 +69,8 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
   const getBorderClass = () => {
     if (hasErrors) return 'border-red-500 shadow-red-100';
     if (hasWarnings) return 'border-yellow-500 shadow-yellow-100';
-    if (data.status === 'running') return 'border-green-500 shadow-green-200';
-    if (data.status === 'error') return 'border-red-500 shadow-red-200';
+    if (effectiveStatus === 'running') return 'border-green-500 shadow-green-200';
+    if (effectiveStatus === 'error') return 'border-red-500 shadow-red-200';
     return 'border-gray-300';
   };
 
@@ -52,15 +80,18 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
         bg-white rounded-lg shadow-md border-2 min-w-[180px]
         ${getBorderClass()}
         ${selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
-        ${data.status === 'running' || hasErrors ? 'shadow-lg' : ''}
+        ${effectiveStatus === 'running' || hasErrors ? 'shadow-lg' : ''}
       `}
     >
       {/* Header */}
       <div className={`px-3 py-2 rounded-t-md ${categoryColorClass}`}>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-medium uppercase opacity-80">
-            {data.category}
-          </span>
+          <div className="flex items-center gap-2">
+            <StatusBadge status={effectiveStatus} />
+            <span className="text-xs font-medium uppercase opacity-80">
+              {data.category}
+            </span>
+          </div>
           <div className="flex items-center gap-1">
             {hasErrors && (
               <span
@@ -78,8 +109,8 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
                 {data.validationWarnings}
               </span>
             )}
-            {data.status === 'error' && !hasErrors && (
-              <span className="text-xs">⚠️</span>
+            {effectiveStatus === 'error' && !hasErrors && (
+              <span className="text-xs">!!</span>
             )}
           </div>
         </div>
@@ -89,16 +120,27 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
       </div>
 
       {/* Metrics (shown when running) */}
-      {data.metrics && data.status === 'running' && (
-        <div className="px-3 py-1 bg-gray-50 text-xs border-b border-gray-200 flex gap-3">
-          <span className="text-gray-600">
-            FPS: <span className="font-medium text-gray-800">{data.metrics.fps}</span>
-          </span>
-          <span className="text-gray-600">
-            Q: <span className={`font-medium ${data.metrics.isQueueFull ? 'text-red-500' : 'text-gray-800'}`}>
-              {data.metrics.qlen}
+      {metrics && effectiveStatus === 'running' && (
+        <div className="px-3 py-1.5 bg-gray-50 text-xs border-b border-gray-200">
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-gray-600">
+              <span className="font-medium text-gray-800">{metrics.fps.toFixed(1)}</span> fps
             </span>
-          </span>
+            <span className="text-gray-600">
+              Queue: <span className={`font-medium ${metrics.isQueueFull ? 'text-red-500' : 'text-gray-800'}`}>
+                {metrics.qlen}
+              </span>
+            </span>
+          </div>
+          {/* Queue fill progress bar */}
+          <div className="mt-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 ${
+                metrics.isQueueFull ? 'bg-red-500' : metrics.qlen > 5 ? 'bg-yellow-500' : 'bg-green-500'
+              }`}
+              style={{ width: `${Math.min(metrics.qlen * 10, 100)}%` }}
+            />
+          </div>
         </div>
       )}
 
