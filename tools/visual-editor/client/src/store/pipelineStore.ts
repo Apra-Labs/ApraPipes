@@ -282,12 +282,49 @@ export const usePipelineStore = create<PipelineState & PipelineActions>((set, ge
 
   toJSON: () => {
     const { config } = get();
-    return JSON.stringify(config, null, 2);
+    // Convert internal format (properties) to external aprapipes format (props)
+    const externalConfig = {
+      modules: {} as Record<string, { type: string; props?: Record<string, unknown> }>,
+      connections: config.connections.map((conn) => ({
+        from: conn.from,
+        to: conn.to,
+      })),
+    };
+
+    for (const [moduleId, moduleConfig] of Object.entries(config.modules)) {
+      externalConfig.modules[moduleId] = {
+        type: moduleConfig.type,
+        ...(moduleConfig.properties && Object.keys(moduleConfig.properties).length > 0
+          ? { props: moduleConfig.properties }
+          : {}),
+      };
+    }
+
+    return JSON.stringify(externalConfig, null, 2);
   },
 
   fromJSON: (json) => {
     try {
-      const config = JSON.parse(json) as PipelineConfig;
+      const parsed = JSON.parse(json);
+
+      // Convert external aprapipes format (props) to internal format (properties)
+      const config: PipelineConfig = {
+        modules: {},
+        connections: parsed.connections || [],
+      };
+
+      // Handle both "modules" at root level and nested under "pipeline"
+      const modules = parsed.modules || {};
+
+      for (const [moduleId, moduleConfig] of Object.entries(modules)) {
+        const mc = moduleConfig as { type: string; props?: Record<string, unknown>; properties?: Record<string, unknown> };
+        config.modules[moduleId] = {
+          type: mc.type,
+          // Prefer properties if present, otherwise use props, otherwise empty
+          properties: mc.properties || mc.props || {},
+        };
+      }
+
       set({ config, isDirty: false });
     } catch (error) {
       // eslint-disable-next-line no-console

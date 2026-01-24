@@ -19,34 +19,39 @@ describe('WorkspaceManager', () => {
     await fs.rm(testBaseDir, { recursive: true, force: true });
   });
 
-  describe('sanitizePath', () => {
-    it('allows normal paths', () => {
-      const result = manager.sanitizePath('my-project');
+  describe('resolvePath', () => {
+    it('resolves relative paths within default directory', () => {
+      const result = manager.resolvePath('my-project');
       expect(result).toBe(path.join(testBaseDir, 'my-project'));
     });
 
-    it('allows nested paths', () => {
-      const result = manager.sanitizePath('user/projects/my-project');
+    it('resolves nested relative paths', () => {
+      const result = manager.resolvePath('user/projects/my-project');
       expect(result).toBe(path.join(testBaseDir, 'user', 'projects', 'my-project'));
     });
 
-    it('removes leading slashes', () => {
-      const result = manager.sanitizePath('/my-project');
-      expect(result).toBe(path.join(testBaseDir, 'my-project'));
+    it('preserves absolute paths', () => {
+      const absolutePath = '/Users/test/Documents/my-project';
+      const result = manager.resolvePath(absolutePath);
+      expect(result).toBe(absolutePath);
     });
 
-    it('throws on directory traversal attempt', () => {
-      expect(() => manager.sanitizePath('../etc/passwd')).toThrow('Path traversal detected');
+    it('normalizes absolute paths', () => {
+      const absolutePath = '/Users/test//Documents/./my-project';
+      const result = manager.resolvePath(absolutePath);
+      expect(result).toBe('/Users/test/Documents/my-project');
+    });
+
+    it('throws on directory traversal attempt in relative path', () => {
+      expect(() => manager.resolvePath('../etc/passwd')).toThrow('Path traversal detected');
+    });
+
+    it('throws on directory traversal attempt in absolute path', () => {
+      expect(() => manager.resolvePath('/Users/test/../../../etc/passwd')).toThrow('Path traversal detected');
     });
 
     it('throws on complex traversal attempt', () => {
-      expect(() => manager.sanitizePath('foo/../../etc/passwd')).toThrow('Path traversal detected');
-    });
-
-    it('throws on encoded traversal attempt', () => {
-      // This tests the resolved path check
-      expect(() => manager.sanitizePath('..%2F..%2Fetc')).not.toThrow();
-      // The path is actually valid because %2F is not decoded
+      expect(() => manager.resolvePath('foo/../../etc/passwd')).toThrow('Path traversal detected');
     });
   });
 

@@ -8,7 +8,11 @@
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { createLogger } from '../utils/logger.js';
+
+// Create require function for loading native addons in ESM context
+const require = createRequire(import.meta.url);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -189,7 +193,12 @@ function loadAddon(): boolean {
       aprapipesAddon = require(addonPath);
       logger.info(`Loaded aprapipes.node from ${addonPath}`);
       return true;
-    } catch {
+    } catch (err) {
+      // Log the actual error for debugging
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (fs.existsSync(addonPath)) {
+        logger.warn(`Failed to load addon from ${addonPath}: ${errorMessage}`);
+      }
       // Continue to next path
     }
   }

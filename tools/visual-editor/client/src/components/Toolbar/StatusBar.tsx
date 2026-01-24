@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Circle, AlertCircle, AlertTriangle, CheckCircle, Wifi, WifiOff } from 'lucide-react';
+import { Circle, AlertCircle, AlertTriangle, CheckCircle, Wifi, WifiOff, Cpu } from 'lucide-react';
 import { useRuntimeStore } from '../../store/runtimeStore';
 import { usePipelineStore } from '../../store/pipelineStore';
 import { useWorkspaceStore } from '../../store/workspaceStore';
+import { api } from '../../services/api';
 
 /**
  * Format duration as HH:MM:SS
@@ -37,6 +38,10 @@ export function StatusBar() {
   // Duration timer
   const [duration, setDuration] = useState<number>(0);
 
+  // Addon status
+  const [addonLoaded, setAddonLoaded] = useState<boolean | null>(null);
+  const [moduleCount, setModuleCount] = useState<number>(0);
+
   useEffect(() => {
     if (runtimeStatus === 'RUNNING' && startTime) {
       const interval = setInterval(() => {
@@ -47,6 +52,18 @@ export function StatusBar() {
       setDuration(0);
     }
   }, [runtimeStatus, startTime]);
+
+  // Fetch addon status on mount
+  useEffect(() => {
+    api.getSchemaStatus()
+      .then((status) => {
+        setAddonLoaded(status.addonLoaded);
+        setModuleCount(status.moduleCount);
+      })
+      .catch(() => {
+        setAddonLoaded(false);
+      });
+  }, []);
 
   // Count errors and warnings from validation
   const errorCount = validationResult?.issues.filter((i) => i.level === 'error').length ?? 0;
@@ -94,6 +111,17 @@ export function StatusBar() {
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* Addon Status Indicator */}
+      <div className="flex items-center gap-1 mr-3" title={addonLoaded ? `Native addon loaded (${moduleCount} modules)` : 'Mock mode - native addon not available'}>
+        <Cpu className={`w-3 h-3 ${addonLoaded === null ? 'text-gray-400' : addonLoaded ? 'text-green-500' : 'text-yellow-500'}`} />
+        <span className={`text-xs ${addonLoaded === null ? 'text-gray-400' : addonLoaded ? 'text-green-600' : 'text-yellow-600'}`}>
+          {addonLoaded === null ? '...' : addonLoaded ? 'Native' : 'Mock'}
+        </span>
+      </div>
+
+      {/* Divider */}
+      <div className="w-px h-4 bg-border mr-3" />
 
       {/* WebSocket Connection Status */}
       <div className="flex items-center gap-1 mr-3">

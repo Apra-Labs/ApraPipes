@@ -57,4 +57,16 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  /**
+   * Get schema status including addon loading status
+   */
+  async getSchemaStatus(): Promise<{
+    addonLoaded: boolean;
+    moduleCount: number;
+    frameTypeCount: number;
+  }> {
+    const response = await fetch(`${API_BASE}/schema/status`);
+    return handleResponse(response);
+  },
 };

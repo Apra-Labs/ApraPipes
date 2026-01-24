@@ -4,32 +4,39 @@ import { logger } from '../utils/logger.js';
 
 /**
  * WorkspaceManager handles file I/O for pipeline workspaces
- * with path sanitization to prevent directory traversal attacks
  */
 export class WorkspaceManager {
-  private baseDir: string;
+  private defaultDir: string;
 
-  constructor(baseDir?: string) {
-    // Default to a 'workspaces' folder relative to server
-    this.baseDir = baseDir || path.join(process.cwd(), 'workspaces');
-    logger.info(`WorkspaceManager initialized with base directory: ${this.baseDir}`);
+  constructor(defaultDir?: string) {
+    // Default directory for relative paths
+    this.defaultDir = defaultDir || path.join(process.cwd(), 'workspaces');
+    logger.info(`WorkspaceManager initialized with default directory: ${this.defaultDir}`);
   }
 
   /**
-   * Sanitize a path to prevent directory traversal
-   * @param userPath - The user-provided path
-   * @returns The sanitized absolute path within baseDir
-   * @throws Error if path escapes baseDir
+   * Resolve a path - supports both absolute and relative paths
+   * @param userPath - The user-provided path (absolute or relative)
+   * @returns The resolved absolute path
+   * @throws Error if path contains directory traversal sequences
    */
-  sanitizePath(userPath: string): string {
-    // Remove any leading slashes and normalize
-    const cleaned = userPath.replace(/^[/\\]+/, '');
+  resolvePath(userPath: string): string {
+    // Check for obvious directory traversal attempts
+    if (userPath.includes('..')) {
+      throw new Error('Path traversal detected');
+    }
 
-    // Join with base and resolve to absolute
-    const resolved = path.resolve(this.baseDir, cleaned);
+    // Check if path is absolute
+    if (path.isAbsolute(userPath)) {
+      // Use the absolute path as-is (normalized)
+      return path.normalize(userPath);
+    }
 
-    // Verify the resolved path is still within baseDir
-    if (!resolved.startsWith(path.resolve(this.baseDir))) {
+    // For relative paths, resolve against the default directory
+    const resolved = path.resolve(this.defaultDir, userPath);
+
+    // Verify the resolved path is still within defaultDir (for relative paths only)
+    if (!resolved.startsWith(path.resolve(this.defaultDir))) {
       throw new Error('Path traversal detected');
     }
 
@@ -42,7 +49,7 @@ export class WorkspaceManager {
    * @returns Array of file info objects
    */
   async listFiles(dirPath: string = ''): Promise<Array<{ name: string; isDirectory: boolean }>> {
-    const fullPath = this.sanitizePath(dirPath);
+    const fullPath = this.resolvePath(dirPath);
 
     try {
       const entries = await fs.readdir(fullPath, { withFileTypes: true });
@@ -66,7 +73,7 @@ export class WorkspaceManager {
    * @param data - The workspace data to save
    */
   async saveWorkspace(workspacePath: string, data: unknown): Promise<void> {
-    const fullPath = this.sanitizePath(workspacePath);
+    const fullPath = this.resolvePath(workspacePath);
 
     // Ensure directory exists
     await fs.mkdir(fullPath, { recursive: true });
@@ -84,7 +91,7 @@ export class WorkspaceManager {
    * @returns The loaded workspace data
    */
   async loadWorkspace(workspacePath: string): Promise<unknown> {
-    const fullPath = this.sanitizePath(workspacePath);
+    const fullPath = this.resolvePath(workspacePath);
     const filePath = path.join(fullPath, 'pipeline.json');
 
     try {
@@ -106,7 +113,7 @@ export class WorkspaceManager {
    * @param workspacePath - Relative path for new workspace
    */
   async createWorkspace(workspacePath: string): Promise<void> {
-    const fullPath = this.sanitizePath(workspacePath);
+    const fullPath = this.resolvePath(workspacePath);
     await fs.mkdir(fullPath, { recursive: true });
     logger.info(`Created new workspace: ${fullPath}`);
   }
@@ -116,7 +123,7 @@ export class WorkspaceManager {
    * @param workspacePath - Relative path to workspace
    */
   async workspaceExists(workspacePath: string): Promise<boolean> {
-    const fullPath = this.sanitizePath(workspacePath);
+    const fullPath = this.resolvePath(workspacePath);
     const filePath = path.join(fullPath, 'pipeline.json');
 
     try {
@@ -132,7 +139,7 @@ export class WorkspaceManager {
    * @param workspacePath - Relative path to workspace
    */
   async deleteWorkspace(workspacePath: string): Promise<void> {
-    const fullPath = this.sanitizePath(workspacePath);
+    const fullPath = this.resolvePath(workspacePath);
     await fs.rm(fullPath, { recursive: true, force: true });
     logger.info(`Deleted workspace: ${fullPath}`);
   }

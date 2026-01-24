@@ -7,6 +7,10 @@
 
 import { EventEmitter } from 'events';
 import { randomUUID } from 'crypto';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { createLogger } from '../utils/logger.js';
 import type {
   PipelineInstance,
@@ -18,6 +22,11 @@ import type {
   ErrorEvent,
 } from '../types/pipeline.js';
 
+// Create require function for loading native addons in ESM context
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const logger = createLogger('PipelineManager');
 
 /**
@@ -26,23 +35,27 @@ const logger = createLogger('PipelineManager');
 function tryLoadNativeAddon(): NativeAddon | null {
   try {
     // Try multiple paths for the native addon
-    const paths = [
-      '../../aprapipes.node',
-      '../../../aprapipes.node',
-      '../../../../aprapipes.node',
-      '../../../../../aprapipes.node',
+    const addonPaths = [
+      path.resolve(process.cwd(), 'aprapipes.node'),
+      path.resolve(process.cwd(), '..', 'aprapipes.node'),
+      path.resolve(process.cwd(), '..', '..', 'aprapipes.node'),
+      path.resolve(process.cwd(), '..', '..', '..', 'aprapipes.node'),
+      path.resolve(__dirname, '..', '..', '..', '..', '..', 'aprapipes.node'),
     ];
 
-    for (const addonPath of paths) {
+    for (const addonPath of addonPaths) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const addon = require(addonPath);
         if (addon && typeof addon.createPipeline === 'function') {
           logger.info(`Native addon loaded from ${addonPath}`);
           return addon as NativeAddon;
         }
-      } catch {
-        // Try next path
+      } catch (err) {
+        // Log error only if the file exists but failed to load
+        if (fs.existsSync(addonPath)) {
+          const errorMessage = err instanceof Error ? err.message : String(err);
+          logger.warn(`Failed to load addon from ${addonPath}: ${errorMessage}`);
+        }
       }
     }
 
