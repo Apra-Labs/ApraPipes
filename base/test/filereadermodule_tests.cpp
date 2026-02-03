@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(relay)
 	
 }
 
-BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(pipeline_relay)
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 
 }
 
-BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(configpipeline)
 {
 	std::string rootDir = "RecordingFolder/5e9ee85ba832470bc8331109"; // point to folder of jpegs
 	auto fileReaderProps = FileReaderModuleProps(rootDir, 0, -1);
@@ -507,7 +507,7 @@ BOOST_AUTO_TEST_CASE(propschange)
 	sink->term();
 }
 
-BOOST_AUTO_TEST_CASE(pipeline_exit, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(pipeline_exit)
 {
 	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
 	FileReaderModuleProps props("./data/filenamestrategydata/?.txt");
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE(pipeline_exit, * boost::unit_test::disabled())
 	p.wait_for_all(true);
 }
 
-BOOST_AUTO_TEST_CASE(pipeline_readone_exit, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(pipeline_readone_exit)
 {
 	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
 	FileReaderModuleProps props("./data/filenamestrategydata/0.txt");
