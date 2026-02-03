@@ -8,17 +8,15 @@ public:
     AudioCaptureSrcProps(
         int _sampleRate,
         int _channels,
-        int _audioInputDeviceIndex,
-        int _processingIntervalMS) : sampleRate(_sampleRate),
+        int _audioInputDeviceIndex) : sampleRate(_sampleRate),
                                 channels(_channels),
-                                audioInputDeviceIndex(_audioInputDeviceIndex),
-                                processingIntervalMS(_processingIntervalMS)
+                                audioInputDeviceIndex(_audioInputDeviceIndex)
     {
     }
     int sampleRate;
     int channels;
     int audioInputDeviceIndex; // starts from 0 to no. of available devices on users system. 
-    int processingIntervalMS;
+
 };
 
 class AudioCaptureSrc  : public Module
