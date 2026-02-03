@@ -16,6 +16,7 @@
 #include "BufferMaker.h"
 #include "PaceMaker.h"
 #include "PausePlayMetadata.h"
+#include <boost/math/common_factor.hpp>
 
 // makes frames from this module's frame factory
 Module::FFBufferMaker::FFBufferMaker(Module &module) : myModule(module) {}
@@ -123,13 +124,12 @@ public:
   {
     healthCallback = _healthCallback;
   }
-
+  int printFrequency;
 private:
   string moduleId;
   sys_clock::time_point processingStart;
   sys_clock::time_point pipelineStart;
   sys_clock::time_point lastHealthCallbackTime;
-  int printFrequency;
   uint64_t counter = 0;
   double totalProcessingDuration = 0;
   double totalPipelineDuration = 0;
@@ -1029,6 +1029,95 @@ void Module::setMetadata(std::string &pinId, framemetadata_sp &metadata)
   return;
 }
 
+/**
+ * Set target FPS for the transform module.
+ *
+ * This function configures the module to throttle its FPS (frames per second) to the specified 
+ * `targetFrameRate`. It also configures how often to check the FPS (`fpsCheckInterval`) and 
+ * how many iterations to perform to accurately calculate current module fps until throttling is applied.
+ *
+ * @param targetFrameRate The desired frames per second for the module.
+ * @param fpsCheckInterval The interval (in frames) to process to calculate the current module FPS.
+ * @param fpsCheckIterations Number of iterations to calculate current fps before throttling.
+ * @return `true` if the configuration is successfully applied.
+ * 
+ * Comments : Change of source module connected to the transform module by means of relays can change 
+ * incoming framerate while skipN and skipD carry on values according to the previous source fps.
+ */
+
+bool Module::tryThrottlingFPS(int targetFrameRate,int fpsCheckInterval, int fpsCheckIterations)
+{
+	if (myNature == SOURCE)
+	{
+		LOG_ERROR << "Throttling FPS for source is not supported";
+		return false;
+	}
+
+	mProfiler->printFrequency = fpsCheckInterval;
+	mProps->enableFpsThrottle = true;
+	mProps->targetFrameRate = targetFrameRate;
+	mProps->fpsCheckIterations = fpsCheckIterations;
+	return true;
+}
+
+/**
+ *  In setTargetModuleFPS
+ *   - `skipN` is set to the difference between the current FPS and the target FPS, defining how many frames to skip.
+ *   - `skipD` is set to the current module FPS to manage frame throttling.
+ *   - `intervalLength` is set to the simplified value of skipD
+ * 	 - `framesToSkip` is set to the simplified value of skipN
+ */
+
+bool Module::setTargetModuleFPS()
+{
+	float skipRatio = 0;
+	int gcdValue = 0;
+	int targetIntervalRange = 10;
+	int moduleFPS = getPipelineFps();
+	moduleFPS = (moduleFPS % 2 == 0 || moduleFPS % 5 == 0) ? moduleFPS : moduleFPS + 1; //Adjust moduleFPS to avoid burst flow of frames
+	if (mProps->targetFrameRate == moduleFPS)
+	{
+		LOG_INFO<<"The module is running at "<<moduleFPS;
+		return true;
+	}
+	if (mProps->targetFrameRate > moduleFPS)
+	{
+		LOG_INFO << "The module is running at " << moduleFPS<<" cannot throttle to higher fps";
+		return true;
+	}
+	if(mProps->targetFrameRate)
+	{
+		mProps->skipN = moduleFPS - mProps->targetFrameRate;
+		mProps->skipD = moduleFPS;
+
+		//Simplifying skipN and skipD
+		while ((gcdValue = boost::math::gcd(mProps->skipN, mProps->skipD)) > 1)
+		{
+			mProps->skipN /= gcdValue;
+			mProps->skipD /= gcdValue;
+		}
+		
+		if (mProps->skipD <= targetIntervalRange) //If the fraction can be simplified within interval range
+		{
+
+			mProps->intervalLength = mProps->skipD;
+			mProps->framesToSkip = mProps->skipN;
+		}
+		else
+		{
+			//If the simplified ratio does not fall within the specified interval range(e.g., when either number is prime), the skipRatio in decimal form 
+			//is multiplied by the intervalLength to estimate the framesToSkip. This ensures the resulting FPS is close to the expected target FPS.
+			skipRatio = static_cast<float>(mProps->skipN) / mProps->skipD;
+			mProps->intervalLength = targetIntervalRange;
+			mProps->framesToSkip = std::round(mProps->intervalLength * skipRatio);
+		}
+
+		return true;
+	}
+	LOG_ERROR<<"Cannot set module FPS to zero";
+	return false;
+}
+
 frame_sp Module::getEOSFrame() { return mpCommandFactory->getEOSFrame(); }
 
 frame_sp Module::getEmptyFrame() { return mpCommandFactory->getEmptyFrame(); }
@@ -1313,26 +1402,31 @@ bool Module::step()
   else
   {
     mProfiler->startPipelineLap();
-
-    // LOG_ERROR  << "Module Id is " << Module::getId() << "Module FPS is  " << Module::getPipelineFps() << mProps->fps;
     auto frames = mQue->pop();
     preProcessNonSource(frames);
-
-    if (frames.size() == 0 || shouldSkip())
+    // shouldSkip is moved inside stepNonSource to factor in the fps
+    if (frames.size() == 0)
     {
-      // it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
-      return true;
+        // it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
+        return true;
     }
-
     if (mPlay)
     {
       mProfiler->startProcessingLap();
       ret = stepNonSource(frames);
       mProfiler->endLap(mQue->size());
-    }
-    else
-    {
-      ret = true;
+      if (mProps->enableFpsThrottle && (getPipelineFps() != 0))
+      {
+          if (!mProps->fpsCheckIterations)
+          {
+              setTargetModuleFPS();
+              mProps->enableFpsThrottle = false;
+          }
+          else
+          {
+              mProps->fpsCheckIterations--;
+          }
+      }
     }
   }
 
@@ -1545,7 +1639,12 @@ bool Module::preProcessNonSource(frame_container &frames)
 
 bool Module::stepNonSource(frame_container &frames)
 {
-  bool ret = true;
+	bool ret = true;
+	// skip frames to be factored into the fps calculation
+	if (shouldSkip())
+	{
+		return ret;
+	}
   try
   {
     ret = process(frames);
@@ -1758,29 +1857,17 @@ bool Module::shouldForceStep()
 
 bool Module::shouldSkip()
 {
-  if (mProps->skipN == 0)
-  {
-    return false;
-  }
+    if (mProps->skipN == 0)
+	{
+        return false;
+    }
 
-  if (mProps->skipN == mProps->skipD)
-  {
-    return true;
-  }
+	if (mProps->skipN == mProps->skipD)
+	{
+		return true;
+	}
 
-  auto skip = true;
+	mSkipIndex = (mSkipIndex + 1) % mProps->intervalLength;
 
-  if (mSkipIndex <= 0 || mSkipIndex > mProps->skipD)
-  {
-    mSkipIndex = mProps->skipD;
-  }
-
-  if (mSkipIndex > mProps->skipN)
-  {
-    skip = false;
-  }
-
-  mSkipIndex--;
-
-  return skip;
+	return mSkipIndex < mProps->framesToSkip;
 }

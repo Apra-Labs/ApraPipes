@@ -111,7 +111,9 @@ public:
   size_t qlen;            // run time changing doesn't effect this
   bool logHealth;         // can be updated during runtime with setProps
   int logHealthFrequency; // 1000 by default - logs the health stats frequency
-
+	int targetFrameRate = 0;
+	bool enableFpsThrottle = false;
+	int fpsCheckIterations = 0;
   // used for VimbaSource where we want to create the max frames and keep
   // recycling it for the VimbaDrive we announce frames after init - 100/200 see
   // VimbaSource.cpp on how it is used
@@ -126,6 +128,8 @@ public:
   // skipD >= skipN
   int skipN = 0;
   int skipD = 1;
+	int intervalLength = 0;
+	int framesToSkip = 0;
   // have one more enum and then in module.cpp dont call run if the enum is pull
   // type.
   FrameFetchStrategy frameFetchStrategy;
@@ -213,7 +217,7 @@ public:
   void registerHealthCallback(APHealthCallback callback);
   void executeErrorCallback(const APErrorObject &error);
   void registerErrorCallback(APErrorCallback callback);
-
+  bool tryThrottlingFPS(int targetFrameRate, int fpsCheckInterval = 100, int retryUntilThrottle = 2);
   ModuleProps getProps();
 
 protected:
@@ -227,7 +231,7 @@ protected:
   bool preProcessNonSource(frame_container &frames);
   bool preProcessControl(frame_container &frames);
   bool isRunning() { return mRunning; }
-
+  bool setTargetModuleFPS();
   void setProps(ModuleProps &props);
   void fillProps(ModuleProps &props);
   // Check if the module is ready for queue-based property changes
