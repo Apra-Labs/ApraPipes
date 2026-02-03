@@ -29,14 +29,60 @@ public:
 	{
 		if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
 		{
-			sps_pps_properties p;
-			H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
-			mWidth = p.width;
-			mHeight = p.height;
+			if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
+			{
+				auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
+				bool spsParsed = false;
 
-			auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
-			auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
-			rawOutMetadata->setData(*rawOutMetadata);
+				try {
+					sps_pps_properties p;
+					H264ParserUtils::parse_sps(((const char*)frame->data()) + 5,
+					                           frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
+					// Only use parsed dimensions if they're valid
+					if (p.width > 0 && p.height > 0) {
+						mWidth = p.width;
+						mHeight = p.height;
+						spsParsed = true;
+						LOG_INFO << "Successfully parsed SPS: " << mWidth << "x" << mHeight;
+					} else {
+						LOG_INFO << "SPS parsing returned invalid dimensions: " << p.width << "x" << p.height;
+					}
+				}
+				catch (const std::exception& ex) {
+					LOG_INFO << "SPS parsing failed: " << ex.what();
+				}
+
+				// If SPS parsing failed or returned invalid dimensions, try metadata fallback
+				if (!spsParsed) {
+					if (h264Metadata->getWidth() > 0 && h264Metadata->getHeight() > 0) {
+						mWidth = h264Metadata->getWidth();
+						mHeight = h264Metadata->getHeight();
+						LOG_INFO << "Using MP4 container metadata: " << mWidth << "x" << mHeight;
+					} else {
+						// Last resort: use safe default
+						mWidth = 1280;
+						mHeight = 720;
+						LOG_ERROR << "No valid dimensions available from SPS or metadata, using default: "
+						          << mWidth << "x" << mHeight;
+					}
+				}
+
+				auto decoderMetadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
+				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(decoderMetadata);
+				rawOutMetadata->setData(*rawOutMetadata);
+#ifdef ARM64
+				helper.reset(new h264DecoderV4L2Helper());
+				return helper->init(send, makeFrame);
+#else
+				helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+				return helper->init(send, makeFrame);
+#endif
+			}
+
+			else
+			{
+				throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
+			}
 		}
 
 		else

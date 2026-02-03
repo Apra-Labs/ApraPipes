@@ -4,7 +4,7 @@
 #include <libavformat/avformat.h>
 
 #include <stdio.h>
-#include <stdlib.h>    
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <iostream>
@@ -17,7 +17,12 @@ using namespace std;
 
 unsigned int SpsPpsParsser::ReadBit()
 {
-	assert(m_nCurrentBit <= m_nLength * 8);
+	if (m_nCurrentBit >= m_nLength * 8)
+	{
+		LOG_ERROR << "H264 Parser: Bit index out of bounds. CurrentBit=" << m_nCurrentBit << " MaxBits=" << (m_nLength * 8);
+		throw std::runtime_error("H264 parser buffer overflow - corrupted or invalid H264 data");
+	}
+
 	int nIndex = m_nCurrentBit / 8;
 	int nOffset = m_nCurrentBit % 8 + 1;
 
