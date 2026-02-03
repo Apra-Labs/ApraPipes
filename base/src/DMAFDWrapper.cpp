@@ -3,6 +3,7 @@
 #include "nvbufsurface.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
+#include <drm/drm_fourcc.h>
 
 #include "cuda_runtime.h"
 
@@ -23,7 +24,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     inputParams.params.layout = layout;
     inputParams.params.colorFormat = colorFormat;
     inputParams.params.memType = NVBUF_MEM_SURFACE_ARRAY;
-    inputParams.memtag = NvBufSurfaceTag_VIDEO_DEC;
+    inputParams.memtag = NvBufSurfaceTag_CAMERA;
 
     if (NvBufSurfaceAllocate(&buffer->m_surf, 1, &inputParams))
     {
@@ -32,6 +33,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         return nullptr;
     }
 
+    buffer->m_surf->numFilled = 1;
     buffer->m_fd = buffer->m_surf->surfaceList[0].bufferDesc;
 
     // Use NvBufferMemMapEx
@@ -58,25 +60,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         }
 
         // JP5: Set hostPtrU to mapped address for plane 1
-        // For NV12, UV plane comes after Y plane in memory
-        // For NV12, use the actual mapped address for UV plane
-        // NvBufSurfaceCopy copies to addr[1], not to Y + offset
-        if (colorFormat == NVBUF_COLOR_FORMAT_NV12) {
-            // Use the actual mapped UV address, not calculated offset
-            buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
-            LOG_ERROR << "[DMAFDWrapper] NV12 UV pointer using mapped addr[1]:";
-            LOG_ERROR << "  Y ptr = " << buffer->hostPtr << " UV ptr = " << buffer->hostPtrU;
-            
-            // Verify if addr[1] is valid
-            if (buffer->hostPtrU == nullptr) {
-                LOG_ERROR << "[DMAFDWrapper] WARNING: UV addr[1] is NULL, calculating offset";
-                uint32_t yPitch = buffer->m_surf->surfaceList[0].planeParams.pitch[0];
-                uint32_t yHeight = buffer->m_surf->surfaceList[0].planeParams.height[0];
-                buffer->hostPtrU = (uint8_t*)buffer->hostPtr + (yPitch * yHeight);
-            }
-        } else {
-            buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
-        }
+        buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
     }
 
     if (colorFormat == NVBUF_COLOR_FORMAT_YUV420)
@@ -93,20 +77,30 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         buffer->hostPtrV = buffer->m_surf->surfaceList[0].mappedAddr.addr[2];
     }
 
-    // if (colorFormat != NvBufferColorFormat_UYVY)
+    // Map NvBufSurface to EGLImage for JP6.2 CUDA interop
+    NvBufSurface *surf = buffer->m_surf;
+    if (NvBufSurfaceMapEglImage(surf, 0) != 0)
     {
-    //     buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
-    //     if (buffer->eglImage == EGL_NO_IMAGE_KHR)
-    //     {
-    //         LOG_ERROR << "Failed to create eglImage";
-    //         delete buffer;
-    //         return nullptr;
-    //     }
-
-    //     cudaFree(0);
-    //     buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
+        LOG_ERROR << "NvBufSurfaceMapEglImage failed";
+        delete buffer;
+        return nullptr;
     }
+    buffer->eglImage = surf->surfaceList[0].mappedAddr.eglImage;
+    LOG_INFO << "Mapped EGL image from NvBufSurface. FD: " << buffer->m_fd
+             << " EGLImage: " << buffer->eglImage;
 
+    cudaFree(0);
+    buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, &buffer->eglFrame);
+    
+    if (buffer->cudaPtr == nullptr)
+    {
+        LOG_ERROR << "Failed to get CUDA pointer from EGL image";
+        delete buffer;
+        return nullptr;
+    }
+    
+    LOG_INFO << "Successfully created CUDA pointer: " << (void*)buffer->cudaPtr;
+    
     return buffer;
 }
 
@@ -126,8 +120,14 @@ DMAFDWrapper::~DMAFDWrapper()
 {
     if (eglImage != EGL_NO_IMAGE_KHR)
     {
-        // cudaFree(0);
-        // DMAUtils::freeCudaPtr(eglImage, &pResource, eglDisplay);
+        if (m_surf)
+        {
+            auto res_unmap_egl = NvBufSurfaceUnMapEglImage(m_surf, 0);
+            if (res_unmap_egl)
+            {
+                LOG_ERROR << "NvBufSurfaceUnMapEglImage Error: " << res_unmap_egl;
+            }
+        }
     }
 
     if (hostPtr)
@@ -211,29 +211,4 @@ const void *DMAFDWrapper::getClientData() const
 void DMAFDWrapper::setClientData(const void *_clientData)
 {
     clientData = _clientData;
-}
-void DMAFDWrapper::refreshHostPointers()
-{
-    if (m_surf) {
-        hostPtr = m_surf->surfaceList[0].mappedAddr.addr[0];
-        
-        // For NV12, use the actual mapped address for UV
-        if (m_surf->surfaceList[0].colorFormat == NVBUF_COLOR_FORMAT_NV12) {
-            hostPtrU = m_surf->surfaceList[0].mappedAddr.addr[1];
-            if (hostPtrU == nullptr) {
-                // Fallback to calculated offset if addr[1] is NULL
-                uint32_t yPitch = m_surf->surfaceList[0].planeParams.pitch[0];
-                uint32_t yHeight = m_surf->surfaceList[0].planeParams.height[0];
-                hostPtrU = (uint8_t*)hostPtr + (yPitch * yHeight);
-            }
-        } else {
-            if (m_surf->surfaceList[0].planeParams.num_planes > 1) {
-                hostPtrU = m_surf->surfaceList[0].mappedAddr.addr[1];
-            }
-        }
-        
-        if (m_surf->surfaceList[0].planeParams.num_planes > 2) {
-            hostPtrV = m_surf->surfaceList[0].mappedAddr.addr[2];
-        }
-    }
 }

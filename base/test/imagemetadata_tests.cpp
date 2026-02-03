@@ -209,10 +209,24 @@ BOOST_AUTO_TEST_CASE(rawplanar_offset)
 			BOOST_TEST(ptr->getWidth(i) == width);
 			BOOST_TEST(ptr->getHeight(i) == height);
 			BOOST_TEST(ptr->getStep(i) == step[i]);
-			BOOST_TEST(ptr->getNextPtrOffset(i) == mnextPtrOffset[i]);
+
 		}
+		size_t expectedOffset = 0;
+		for (int i = 0; i < channels; i++)
+		{
+			BOOST_TEST(ptr->getNextPtrOffset(i) == expectedOffset);
+			expectedOffset += ptr->getStep(i) * ptr->getHeight(i);
+		}
+
 		BOOST_TEST(ptr->getChannels() == channels);
-		BOOST_TEST(ptr->getDataSize() == 0);
+	
+		size_t expectedSize = 0;
+		for (int i = 0; i < channels; i++)
+		{
+			expectedSize += ptr->getStep(i) * ptr->getHeight(i);
+		}
+		BOOST_TEST(ptr->getDataSize() == expectedSize);
+
 	}
 
 }

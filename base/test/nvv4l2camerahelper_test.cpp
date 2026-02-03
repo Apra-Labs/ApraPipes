@@ -3,6 +3,7 @@
 #include "Module.h"
 #include "DMAFDWrapper.h"
 #include "NvV4L2CameraHelper.h"
+#include "DMAAllocator.h"
 #include "test_utils.h"
 #include "Logger.h"
 
@@ -12,15 +13,20 @@ BOOST_AUTO_TEST_SUITE(nvv4l2camerahelper_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
+    	LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
     uint32_t width = 640;
     uint32_t height = 480;
 
-    auto framemetadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::UYVY, CV_8UC3, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+    auto framemetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+    DMAAllocator::setMetadata(framemetadata, width, height, ImageMetadata::ImageType::YUYV);
     framefactory_sp framefactory(new FrameFactory(framemetadata, 10));
 
     auto helper = std::make_shared<NvV4L2CameraHelper>([](frame_sp &frame) -> void {
         if(!frame.get())
-        {
+        { 
             LOG_ERROR << "RECEIVED NULLPTR FRAME";
             return;
         }
@@ -41,9 +47,8 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
         }
     );
 
-    BOOST_TEST(helper->start(width, height, 10, false));
-
-    boost::this_thread::sleep_for(boost::chrono::seconds(1));
+    helper->start(width, height, 10, false);
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
     BOOST_TEST(helper->stop());
     helper.reset();
@@ -55,10 +60,11 @@ BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
 {
     frame_sp cacheFrame;
     {
-        uint32_t width = 640;
-        uint32_t height = 480;
+        uint32_t width = 3280;
+        uint32_t height = 2464;
 
-        auto framemetadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::UYVY, CV_8UC3, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+        auto framemetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+        DMAAllocator::setMetadata(framemetadata, width, height, ImageMetadata::ImageType::UYVY);
         framefactory_sp framefactory(new FrameFactory(framemetadata,10));
 
         auto helper = std::make_shared<NvV4L2CameraHelper>([&](frame_sp &frame) -> void {

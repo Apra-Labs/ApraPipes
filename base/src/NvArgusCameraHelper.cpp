@@ -36,7 +36,8 @@ void NvArgusCameraHelper::sendFrame(Argus::Buffer *buffer)
     auto frame = mQueuedFrames[ptr];
     mSendFrame(frame);
     std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
-    mQueuedFrames.erase(ptr);
+    auto erased = mQueuedFrames.erase(ptr);
+
 }
 
 void NvArgusCameraHelper::operator()()
@@ -53,7 +54,6 @@ void NvArgusCameraHelper::operator()()
             /* Timeout or error happen, exit */
             break;
         }
-
         sendFrame(buffer);
     }
 }
@@ -76,7 +76,10 @@ bool NvArgusCameraHelper::queueFrameToCamera()
     }
 
     std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
+    
     mQueuedFrames[dmaFDWrapper] = frame;
+    
+    return true;
 }
 
 boost::shared_ptr<NvArgusCameraUtils> NvArgusCameraUtils::instance;
@@ -157,6 +160,11 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
     /* Create the OutputStream */
     outputStream.reset(iCaptureSession->createOutputStream(streamSettings.get()));
     Argus::IBufferOutputStream *iBufferOutputStream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
+    if (!iBufferOutputStream)
+    {
+        LOG_ERROR << "Failed to get Argus::IBufferOutputStream interface";
+        return false;
+    }
     
     /* Create the Argus::BufferSettings object to configure Argus::Buffer creation */
     Argus::UniqueObj<Argus::BufferSettings> bufferSettings(iBufferOutputStream->createBufferSettings());
@@ -180,8 +188,15 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
 
         auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
 
-        iBufferSettings->setEGLImage(dmaFDWrapper->getEGLImage());
-        iBufferSettings->setEGLDisplay(dmaFDWrapper->getEGLDisplay());
+        EGLImageKHR eglImg = dmaFDWrapper->getEGLImage();
+        EGLDisplay eglDisp = dmaFDWrapper->getEGLDisplay();
+        
+        if (eglImg == EGL_NO_IMAGE_KHR) {
+            LOG_ERROR << "Buffer[" << i << "] EGLImage is EGL_NO_IMAGE_KHR - this will cause Argus createBuffer to fail";
+        }
+
+        iBufferSettings->setEGLImage(eglImg);
+        iBufferSettings->setEGLDisplay(eglDisp);
         buffers[i].reset(iBufferOutputStream->createBuffer(bufferSettings.get()));
         Argus::IBuffer *iBuffer = Argus::interface_cast<Argus::IBuffer>(buffers[i]);
         if (!Argus::interface_cast<Argus::IEGLImageBuffer>(buffers[i]))

@@ -7,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include "Utils.h"
 #include "AIPExceptions.h"
+#include "DMAFDWrapper.h"
 
 #define MSDK_ALIGN16(value)                      (((value + 15) >> 4) << 4) // round up to a multiple of 16
 #define MSDK_ALIGN32(X) (((uint32_t)((X)+31)) & (~ (uint32_t)31))
@@ -43,37 +44,71 @@ public:
 
 	void copyYUV420PlanarToContiguous(const unsigned char* base, unsigned char* dst, RawImagePlanarMetadata* rim)
 	{
-		// const int width = rim->getWidth(0);
-		// const int height = rim->getHeight(0);
-		// const size_t stepY = rim->getStep(0);
-		// const size_t stepU = rim->getStep(1);
-		// const size_t stepV = rim->getStep(2);
-		// const size_t offY = rim->getNextPtrOffset(0);
-		// const size_t offU = rim->getNextPtrOffset(1);
-		// const size_t offV = rim->getNextPtrOffset(2);
-		// const unsigned char* srcY = base + offY;
-		// const unsigned char* srcU = base + offU;
-		// const unsigned char* srcV = base + offV;
-		// unsigned char* dstY = dst;
-		// unsigned char* dstU = dst + width * height;
-		// unsigned char* dstV = dstU + (width * height) / 4;
-		// // Y
-		// for (int r = 0; r < height; r++)
-		// {
-		// 	memcpy(dstY + r * width, srcY + r * stepY, width);
-		// }
-		// // U and V are half resolution
-		// const int uvWidth = width / 2;
-		// const int uvHeight = height / 2;
-		// for (int r = 0; r < uvHeight; r++)
-		// {
-		// 	memcpy(dstU + r * uvWidth, srcU + r * stepU, uvWidth);
-		// 	memcpy(dstV + r * uvWidth, srcV + r * stepV, uvWidth);
-		// }
+		 const int width  = rim->getWidth(0);
+    const int height = rim->getHeight(0);
+
+    const size_t stepY = rim->getStep(0);
+    const size_t stepU = rim->getStep(1);
+    const size_t stepV = rim->getStep(2);
+
+    const size_t offY = rim->getNextPtrOffset(0);
+    const size_t offU = rim->getNextPtrOffset(1);
+    const size_t offV = rim->getNextPtrOffset(2);
+
+    const unsigned char* srcY = base + offY;
+    const unsigned char* srcU = base + offU;
+    const unsigned char* srcV = base + offV;
+
+    unsigned char* dstY = dst;
+    unsigned char* dstU = dst + width * height;
+    unsigned char* dstV = dstU + (width * height) / 4;
+
+    // Copy Y plane row-by-row (handle stride)
+    for (int r = 0; r < height; r++)
+    {
+        memcpy(dstY + r * width, srcY + r * stepY, width);
+    }
+
+    // Copy U and V planes (half resolution)
+    const int uvWidth  = width / 2;
+    const int uvHeight = height / 2;
+
+    for (int r = 0; r < uvHeight; r++)
+    {
+        memcpy(dstU + r * uvWidth, srcU + r * stepU, uvWidth);
+        memcpy(dstV + r * uvWidth, srcV + r * stepV, uvWidth);
+    }
 	}
 
-	size_t compute(frame_sp& inFrame, frame_sp& frame)
-	{
+size_t compute(frame_sp& inFrame, frame_sp& frame)
+ {
+        auto inMeta = inFrame->getMetadata();
+
+    	// If input is DMABUF planar YUV420 or NV12, use encodeFromFd
+    	if (inMeta->getMemType() == FrameMetadata::DMABUF && (inMeta->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR || inMeta->getFrameType() == FrameMetadata::RAW_IMAGE))
+    	{
+        	// Extract fd
+        	auto dma = static_cast<DMAFDWrapper*>(inFrame->data());
+        	int fd = dma->getFd();
+        	if (fd <= 0) {
+            	LOG_ERROR << "Invalid DMABUF fd";
+            	return 0;
+       		 }
+
+        	// Setup output buffer
+        	auto out_ptr = static_cast<unsigned char*>(frame->data());
+        	unsigned char* out_buf = out_ptr;
+        	unsigned long out_len = static_cast<unsigned long>(frame->size());
+
+        	int ret = encHelper->encodeFromFd(fd, color_space, &out_buf, out_len, mProps.quality);
+        	if (ret < 0) {
+            	LOG_ERROR << "encodeFromFd failed";
+            	return 0;
+        	}
+        	return static_cast<size_t>(out_len);
+    }
+	else{
+		
 		auto in_buf = static_cast<const unsigned char*>(inFrame->data());
 
 		if(color_space == JCS_YCbCr)
@@ -107,7 +142,7 @@ public:
 					}
 					else if (rim->getImageType() == ImageMetadata::YUV420)
 					{
-						// copyYUV420PlanarToContiguous((unsigned char*)inFrame->data(), (unsigned char*)dummyBuffer.get(), rim);
+						copyYUV420PlanarToContiguous((unsigned char*)inFrame->data(), (unsigned char*)dummyBuffer.get(), rim);
 						in_buf = dummyBuffer.get();
 					}
 					else
@@ -132,6 +167,7 @@ public:
 		
 		return outLength;
 	}
+	}
 
 	size_t getDataSize()
 	{
@@ -150,22 +186,40 @@ public:
 
 	bool validateMetadata(framemetadata_sp &metadata, std::string id)
 	{
-		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3 && rawImageMetadata->getChannels() != 4)
+		if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE)
 		{
-			LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1, 3, or 4";
-			return false;
-		}
+			auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+			if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3 && rawImageMetadata->getChannels() != 4)
+			{
+				LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1, 3, or 4";
+				return false;
+			}
 
-		if(rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB && rawImageMetadata->getImageType() != ImageMetadata::RGBA && rawImageMetadata->getImageType() != ImageMetadata::NV12)
-		{
-			LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO, RGB, RGBA, or NV12";
-			return false;
-		}
+			if (rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB)
+			{
+				LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO, RGB, RGBA";
+				return false;
+			}
 
-		if (rawImageMetadata->getStep()*mProps.scale != MSDK_ALIGN32(rawImageMetadata->getWidth()*rawImageMetadata->getChannels()*mProps.scale))
+			if (rawImageMetadata->getStep() * mProps.scale != MSDK_ALIGN32(rawImageMetadata->getWidth() * rawImageMetadata->getChannels() * mProps.scale))
+			{
+				LOG_ERROR << "<" << id << ">:: RAW_IMAGE STEP IS EXPECTED TO BE 32 BIT ALIGNED<>" << rawImageMetadata->getWidth() << "<>" << mProps.scale;
+				return false;
+			}
+		}
+		else if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
-			LOG_ERROR << "<" << id << ">:: RAW_IMAGE STEP IS EXPECTED TO BE 32 BIT ALIGNED<>" << rawImageMetadata->getWidth() << "<>" << mProps.scale;
+			auto rawImagePlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+			// For now, we are just allowing this. Add specific validations if needed.
+			if (rawImagePlanarMetadata->getImageType() != ImageMetadata::YUV420 && rawImagePlanarMetadata->getImageType() != ImageMetadata::NV12)
+			{
+				LOG_ERROR << "<" << id << ">:: ImageType is expected to be YUV420 or NV12";
+				return false;
+			}
+
+		}
+		else
+		{
 			return false;
 		}
 
@@ -271,7 +325,7 @@ private:
 			}
 			else if(rawImageMetadata->getImageType() == ImageMetadata::RGBA)
 			{
-				color_space = JCS_EXT_RGBA;
+				color_space = JCS_RGBA_8888;
 			}
 			else if(rawImageMetadata->getImageType() == ImageMetadata::NV12 || rawImageMetadata->getImageType() == ImageMetadata::YUV420)
 			{
@@ -300,7 +354,7 @@ private:
 			}
 			else if(rim->getImageType() == ImageMetadata::RGBA)
 			{
-				color_space = JCS_EXT_RGBA;
+				color_space = JCS_RGBA_8888;
 			}
 			else if(rim->getImageType() == ImageMetadata::NV12 || rim->getImageType() == ImageMetadata::YUV420)
 			{
@@ -353,7 +407,7 @@ bool JPEGEncoderL4TM::validateInputPins()
 
 	if (metadata->isSet())
 	{
-		// return mDetail->validateMetadata(metadata, getId());
+		return mDetail->validateMetadata(metadata, getId());
 	}
 
 	return true;

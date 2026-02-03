@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_SUITE(memtypeconversion_tests)
 BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 {
 #if 1
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
@@ -53,14 +53,14 @@ BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Dma_to_Device_to_Host_RGBA_1280x720.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("../data/MemConversion_outputs/Host_to_Dma_to_Device_to_Host_RGBA_1280x720.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 {
 #if 1
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
 
@@ -98,14 +98,14 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("../data/MemConversion_outputs/Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Host_BGRA_400x400)
 {
 #if 1
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/overlay_400x400_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Host_BGRA_400x400)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Dma_to_Host_BGRA_400x400.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("../data/MemConversion_outputs/Host_to_Device_to_Dma_to_Host_BGRA_400x400.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 #endif
 }
 
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host, *boost::unit_test::disabled())
 	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
 	transform->setNext(memconversion);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../data/testOutput/nvv4l2/frame_????.raw")));
 	memconversion->setNext(sink);
 
 	PipeLine p("test");
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
 	memconversion->setNext(memconversion2);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0)));
 	memconversion2->setNext(sink);
 
 	PipeLine p("test");
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 {
 #if 1
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	copy1->setNext(memconversion);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0)));
 	memconversion->setNext(sink);
 
 	PipeLine p("test");
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 {
 #if 1
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
 
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	copy1->setNext(memconversion);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0)));
 	memconversion->setNext(sink);
 
 	PipeLine p("test");
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device_Planar, *boost::unit_test::disabled())
 	auto copy2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion->setNext(copy2);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../data/testOutput/nvv4l2/frame_????.raw")));
 	copy2->setNext(sink);
 
 	PipeLine p("test");
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 	auto copy2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion->setNext(copy2);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../data/testOutput/nvv4l2/frame_?????.raw")));
 	copy2->setNext(sink);
 
 	PipeLine p("test");
@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/RGB_320x180.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
@@ -376,12 +376,12 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Host_RGB_320x180.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("../data/MemConversion_outputs/Host_to_Device_to_Host_RGB_320x180.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/nv12-704x576.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/nv12-704x576.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(704, 576, ImageMetadata::ImageType::NV12, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
 
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Host_NV12.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("../data/MemConversion_outputs/Host_to_Device_to_Host_NV12.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
