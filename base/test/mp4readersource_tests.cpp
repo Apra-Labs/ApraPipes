@@ -13,6 +13,8 @@
 #include "ExternalSinkModule.h"
 #include "test_utils.h"
 #include "Mp4ErrorFrame.h"
+#include "ImageDecoderCV.h"
+#include "ImageViewerModule.h"
 
 BOOST_AUTO_TEST_SUITE(mp4readersource_tests)
 
@@ -571,6 +573,41 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 	mp4Reader->step();
 	frames = sink->pop();
 	BOOST_TEST((frames.find(pinId) != frames.end()));
+}
+
+
+BOOST_AUTO_TEST_CASE(mp4_4x_playback_display)
+{
+	std::string videoPath = "/home/developer/ApraPipes/data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
+	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
+	bool parseFS = false;
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.playbackSpeed = 4.0f;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	mp4Reader->addOutPutPin(encodedImageMetadata);
+
+	auto decoderProps = ImageDecoderCVProps();
+	auto decoder = boost::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(decoderProps));
+	auto rawImageMetadata = framemetadata_sp(new RawImageMetadata());
+	decoder->addOutputPin(rawImageMetadata);
+	mp4Reader->setNext(decoder);
+
+	auto viewerProps = ImageViewerModuleProps("4x Playback Display");
+	auto viewer = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(viewerProps));
+	decoder->setNext(viewer);
+
+	PipeLine p("4x_playback");
+	p.appendModule(mp4Reader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
