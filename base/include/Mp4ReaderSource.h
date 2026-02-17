@@ -14,7 +14,7 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false, float _playbackSpeed = 1.0f, uint64_t _startTimestamp = 0) : ModuleProps()
 	{
 		/* About props:
 			- videoPath - Path of a video from where the reading will start.
@@ -23,11 +23,19 @@ public:
 			- parseFS - Read the NVR format till infinity, if true. Else we read only one file.
 			- readLoop - Read a single video in loop. It can not be used in conjuction with live mode (reInitInterval > 0) or NVR mode (parseFS = true) mode.
 			- giveLiveTS - If enabled, gives live timestamps instead of recorded timestamps in the video files.
+			- playbackSpeed - Initial playback speed (0.25x to 32x). Can be changed dynamically via changePlaybackSpeed().
+			- startTimestamp - Optional hint timestamp (in milliseconds) for where playback will start. Used to optimize initial cache building in parseFS mode.
 		*/
 
 		if (reInitInterval < 0)
 		{
 			auto errMsg = "incorrect prop reInitInterval <" + std::to_string(reInitInterval) + ">";
+			throw AIPException(AIP_FATAL, errMsg);
+		}
+
+		if (_playbackSpeed <= 0.0f)
+		{
+			auto errMsg = "playbackSpeed must be greater than 0. Provided: <" + std::to_string(_playbackSpeed) + ">";
 			throw AIPException(AIP_FATAL, errMsg);
 		}
 
@@ -42,6 +50,8 @@ public:
 		parseFS = _parseFS;
 		bFramesEnabled = _bFramesEnabled;
 		direction = _direction;
+		playbackSpeed = _playbackSpeed;
+		startTimestamp = _startTimestamp;
 		giveLiveTS = _giveLiveTS;
 		if (_reInitInterval < 0)
 		{
@@ -70,7 +80,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled) + sizeof(forceFPS);
+		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled) + sizeof(forceFPS) + sizeof(playbackSpeed) + sizeof(startTimestamp);
 	}
 
 	std::string skipDir = "./data/Mp4_videos";
@@ -85,6 +95,8 @@ public:
 	bool readLoop = false;
 	bool giveLiveTS = false;
 	bool forceFPS = false;
+	float playbackSpeed = 1.0f;
+	uint64_t startTimestamp = 0;
 private:
 	friend class boost::serialization::access;
 
@@ -103,6 +115,8 @@ private:
 		ar& readLoop;
 		ar& giveLiveTS;
 		ar& forceFPS;
+		ar& playbackSpeed;
+		ar& startTimestamp;
 	}
 };
 
@@ -119,6 +133,7 @@ public:
 	void setImageMetadata(std::string& pinId, framemetadata_sp& metadata);
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool changePlayback(float speed, bool direction);
+	bool changePlaybackSpeed(float speed, bool direction = true);
 	bool getVideoRangeFromCache(std::string videoPath, uint64_t& start_ts, uint64_t& end_ts);
 	bool randomSeek(uint64_t skipTS, bool forceReopen = false);
 	bool refreshCache();
