@@ -14,54 +14,66 @@ public:
 
   void setProps(ArchiveSpaceManagerProps _props) { mProps = _props; }
 
-  uint64_t estimateDirectorySize(boost::filesystem::path _dir)
-  {
+ uint64_t estimateDirectorySize(boost::filesystem::path _dir)
+{
     uint64_t dirSize = 0;
     int sample = 0;
     int inCount = 0;
     int countFreq = 0;
     uint64_t tempSize = 0;
 
-    for (const auto &entry :
-         boost::filesystem::recursive_directory_iterator(_dir))
+    if (!boost::filesystem::exists(_dir) || !boost::filesystem::is_directory(_dir))
     {
-      if (boost::filesystem::is_regular_file(entry))
-      {
-        if (countFreq % mProps.samplingFreq == 0)
-        {
-          sample = (rand() % mProps.samplingFreq);
-          inCount = 0;
-        }
-
-        if (inCount == sample)
-        {
-          try
-          {
-            tempSize = boost::filesystem::file_size(entry);
-            dirSize += tempSize * mProps.samplingFreq;
-          }
-          catch (const std::exception &e)
-          {
-            LOG_INFO << "Failed to get file size for " << entry << ": "
-                      << e.what();
-          }
-        }
-
-        inCount++;
-        countFreq++;
-      }
+        LOG_ERROR << "Directory does not exist or is not a directory: " << _dir.string();
+        return 0;
     }
 
-    // Adjust for the remaining files if they are fewer than the sampling
-    // frequency
+    try
+    {
+        for (const auto &entry : boost::filesystem::recursive_directory_iterator(_dir))
+        {
+            if (boost::filesystem::is_regular_file(entry))
+            {
+                if (countFreq % mProps.samplingFreq == 0)
+                {
+                    sample = (rand() % mProps.samplingFreq);
+                    inCount = 0;
+                }
+
+                if (inCount == sample)
+                {
+                    try
+                    {
+                        tempSize = boost::filesystem::file_size(entry);
+                        dirSize += tempSize * mProps.samplingFreq;
+                    }
+                    catch (const std::exception &e)
+                    {
+                        LOG_INFO << "Failed to get file size for " << entry.path().string() << ": "
+                                 << e.what();
+                    }
+                }
+
+                inCount++;
+                countFreq++;
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        LOG_ERROR << "Failed to iterate directory " << _dir.string() << ": " << e.what();
+        return 0;
+    }
+
+    // Adjust for the remaining files if they are fewer than the sampling frequency
     if (inCount < mProps.samplingFreq && inCount > 0)
     {
       dirSize += tempSize * inCount;
     }
 
-    LOG_TRACE << "Total Directory Size: " << dirSize;
+    LOG_INFO << "Total Directory Size: " << dirSize;
     return dirSize;
-  }
+}
 
   boost::filesystem::path getOldestDirectory(boost::filesystem::path _cam)
   {
@@ -80,53 +92,125 @@ public:
     return _cam;
   };
 
-  void manageDirectory()
+boost::filesystem::path getOldestHourDirByName(const boost::filesystem::path& cameraDir)
+{
+    boost::filesystem::path oldestDay;
+    for (const auto& dayEntry : boost::filesystem::directory_iterator(cameraDir))
+    {
+        LOG_INFO<<"dayEntry path"<<dayEntry.path();
+        if (!boost::filesystem::is_directory(dayEntry)) continue;
+        if (oldestDay.empty() || dayEntry.path().filename() < oldestDay.filename())
+            oldestDay = dayEntry.path();
+    }
+
+     boost::filesystem::path oldestHour;
+    for (const auto& hourEntry : boost::filesystem::directory_iterator(oldestDay))
+    {
+        if (!boost::filesystem::is_directory(hourEntry)) continue;
+        if (oldestHour.empty() || hourEntry.path().filename() < oldestHour.filename())
+            LOG_INFO<<"hourEntry path"<<hourEntry.path();
+            oldestHour = hourEntry.path();
+    }
+    return oldestHour;
+}
+
+
+ 
+
+   void manageDirectory()
   {
     auto comparator = [](const std::pair<boost::filesystem::path, uint64_t> &a,
-                         const std::pair<boost::filesystem::path, uint64_t> &b)
+                        const std::pair<boost::filesystem::path, uint64_t> &b)
     {
       return a.second < b.second;
     };
     while (archiveSize > mProps.lowerWaterMark)
     {
-      foldVector.clear();
-      for (const auto &entry : boost::filesystem::directory_iterator(mProps.pathToWatch))
+      for (const auto &camFolder :
+           boost::filesystem::directory_iterator(mProps.pathToWatch))
       {
-        if (boost::filesystem::is_directory(entry))
-        {
-          foldVector.push_back({entry.path(), boost::filesystem::last_write_time(entry)});
-        }
-      }
-      if (foldVector.empty())
-        break;
-      std::sort(foldVector.begin(), foldVector.end(), comparator);
+        
+        boost::filesystem::path oldHrDir = getOldestHourDirByName(camFolder);
 
+         if (!boost::filesystem::exists(oldHrDir) || !boost::filesystem::is_directory(oldHrDir))
+        {
+            LOG_ERROR << "Directory does not exist or is not a directory: " << oldHrDir.string();
+            continue;
+        }
+
+        uint64_t lastWrite = boost::filesystem::last_write_time(oldHrDir);
+
+            // Print oldest hour dir and its last write time for each camera
+            std::time_t t = static_cast<std::time_t>(lastWrite);
+            BOOST_LOG_TRIVIAL(info) << "Camera: " << camFolder.path().string()
+                                    << " | Oldest Hour Dir: " << oldHrDir.string()
+                                    << " | Last Write: " << std::asctime(std::localtime(&t));
+
+        foldVector.push_back(
+            {oldHrDir, boost::filesystem::last_write_time(oldHrDir)});
+      }
+
+        
+      sort(foldVector.begin(), foldVector.end(),
+           comparator); // Sorting the vector
+
+      BOOST_LOG_TRIVIAL(info) << "Contents of foldVector:";
+        for (const auto &item : foldVector)
+        {
+            std::time_t t = static_cast<std::time_t>(item.second);
+            BOOST_LOG_TRIVIAL(info) << "Dir: " << item.first.string()
+                                    << " | Last Write: " << std::asctime(std::localtime(&t));
+        }
+
+         if (foldVector.empty())
+       {
+          LOG_ERROR << "No valid directories to delete.";
+          break;
+       }
+
+      uint64_t tempSize = 0;
       boost::filesystem::path delDir = foldVector[0].first;
-      LOG_INFO << "Deleting directory : " << delDir.string();
-      uint64_t tempSize = estimateDirectorySize(delDir);
-      archiveSize -= tempSize;
+
+        if (!boost::filesystem::exists(delDir) || !boost::filesystem::is_directory(delDir))
+       {
+          LOG_ERROR << "Directory to delete does not exist or is not a directory: " << delDir.string();
+          foldVector.clear();
+          continue;
+       }
+       BOOST_LOG_TRIVIAL(info) << "Deleting folder : " << delDir.string();
+       tempSize = estimateDirectorySize(delDir);
+       archiveSize = archiveSize - tempSize;
+       LOG_INFO<<"archive size after deleting"<<archiveSize;
       try
       {
         boost::filesystem::remove_all(delDir);
         boost::filesystem::path parentDir = delDir.parent_path();
-        if (boost::filesystem::is_empty(parentDir))
+         if (boost::filesystem::exists(parentDir) && boost::filesystem::is_directory(parentDir) && boost::filesystem::is_empty(parentDir))
         {
-          LOG_INFO << "Deleting parent directory : " << parentDir.string();
-          boost::filesystem::remove_all(parentDir);
+            BOOST_LOG_TRIVIAL(info) << "Deleting parent directory : " << parentDir.string();
+            try {
+                boost::filesystem::remove_all(parentDir);
+            } catch (const std::exception& e) {
+                LOG_ERROR << "Could not delete parent directory: " << e.what();
+            }
         }
       }
       catch (...)
       {
         LOG_ERROR << "Could not delete directory!..";
       }
+      foldVector.clear();
+      LOG_INFO<<"clearing the folder vectors";
+   
     }
   }
-
   uint64_t diskOperation()
   {
     archiveSize = estimateDirectorySize(mProps.pathToWatch);
+    LOG_INFO<<"archive size:"<<archiveSize;
     if (archiveSize > mProps.upperWaterMark)
     {
+      LOG_INFO<<"upw hit manageDirectory:"<<mProps.upperWaterMark;
       manageDirectory();
     }
     else
@@ -196,9 +280,13 @@ bool ArchiveSpaceManager::produce()
   {
     finalArchiveSpace = mDetail->diskOperation();
   }
+   catch (const std::exception& e)
+  {
+    LOG_ERROR << "Archive Disk Manager encountered an error: " << e.what();
+  }
   catch (...)
   {
-    LOG_ERROR << "Archive Disk Manager encountered an error.";
+    LOG_ERROR << "Archive Disk Manager encountered an unknown error.";
   }
   return true;
 }
