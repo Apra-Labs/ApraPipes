@@ -92,31 +92,32 @@ public:
     return _cam;
   };
 
-boost::filesystem::path getOldestHourDirByName(const boost::filesystem::path& cameraDir)
-{
-    boost::filesystem::path oldestDay;
-    for (const auto& dayEntry : boost::filesystem::directory_iterator(cameraDir))
+  boost::filesystem::path getOldestHourDirByName(const boost::filesystem::path& cameraDir)
+  {
+  boost::filesystem::path oldestDay;
+  for (const auto& dayEntry : boost::filesystem::directory_iterator(cameraDir))
+  {
+  LOG_INFO<<"dayEntry path"<<dayEntry.path();
+  if (!boost::filesystem::is_directory(dayEntry)) continue;
+    if (oldestDay.empty() || dayEntry.path().filename() < oldestDay.filename())
     {
-        LOG_INFO<<"dayEntry path"<<dayEntry.path();
-        if (!boost::filesystem::is_directory(dayEntry)) continue;
-        if (oldestDay.empty() || dayEntry.path().filename() < oldestDay.filename())
-            oldestDay = dayEntry.path();
+    oldestDay = dayEntry.path();
     }
+  }
 
-     boost::filesystem::path oldestHour;
+  boost::filesystem::path oldestHour;
     for (const auto& hourEntry : boost::filesystem::directory_iterator(oldestDay))
     {
-        if (!boost::filesystem::is_directory(hourEntry)) continue;
-        if (oldestHour.empty() || hourEntry.path().filename() < oldestHour.filename())
-            LOG_INFO<<"hourEntry path"<<hourEntry.path();
-            oldestHour = hourEntry.path();
+      if (!boost::filesystem::is_directory(hourEntry)) continue;
+      if (oldestHour.empty() || hourEntry.path().filename() < oldestHour.filename())
+      { 
+        LOG_INFO<<"hourEntry path"<<hourEntry.path();
+        oldestHour = hourEntry.path();
+      }
     }
-    return oldestHour;
-}
-
-
- 
-
+  return oldestHour;
+  }
+  
    void manageDirectory()
   {
     auto comparator = [](const std::pair<boost::filesystem::path, uint64_t> &a,
