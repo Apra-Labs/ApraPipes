@@ -174,6 +174,8 @@ public:
 			cof->clearCache();
 			if (tempVideoPath == mState.mVideoPath)
 			{
+				// When only props are being updated (same video path), preserve playbackSpeed and fps
+				// from the incoming props (which should already have the correct values from setPlayback)
 				updateMstate(props, tempVideoPath);
 				return;
 			}
@@ -297,6 +299,7 @@ public:
 		{
 			playbackSpeed = _speed;
 			mState.speed = _speed;
+			mProps.playbackSpeed = _speed;
 
 			// Only update FPS if video is open and forceFPS is not enabled
 			if (mState.demux && !mProps.forceFPS)
@@ -2096,15 +2099,28 @@ bool Mp4ReaderSource::validateOutputPins()
 
 Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 {
+	// Expose the latest effective props from the detail object (includes playbackSpeed / fps updates).
 	return mDetail->mProps;
 }
 
 bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
-	bool direction = getPlayDirection();
-	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.parseFS, mDetail->mProps.reInitInterval, direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
-	bool ret = Module::handlePropsChange(frame, props);
-	mDetail->setProps(props);
+	// Start from the latest internal props (which already include any playbackSpeed/FPS changes)
+	Mp4ReaderSourceProps newProps = mDetail->mProps;
+	// Only override direction from the current play state
+	newProps.direction = getPlayDirection();
+	
+	// Ensure playbackSpeed and fps are preserved from mDetail->mProps
+	// (they should already be there, but be explicit to avoid any issues)
+	newProps.playbackSpeed = mDetail->mProps.playbackSpeed;
+	newProps.fps = mDetail->mProps.fps;
+
+	// Let the base Module apply these props (timers, logging, etc.)
+	bool ret = Module::handlePropsChange(frame, newProps);
+
+	// Keep both the Module-level props and internal detail props in sync
+	props = newProps;
+	mDetail->setProps(newProps);
 	return ret;
 }
 
