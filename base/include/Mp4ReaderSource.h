@@ -45,7 +45,31 @@ public:
 				"> reInitInterval <" + std::to_string(reInitInterval) + "> parseFS <" + std::to_string(_parseFS) + ">";
 			throw AIPException(AIP_FATAL, errMsg);
 		}
-		auto canonicalVideoPath = boost::filesystem::canonical(_videoPath);
+		// Resolve videoPath robustly for both in-tree runs and out-of-tree build dirs.
+		// 1) Try to canonicalize as given (relative to current working directory).
+		// 2) If that fails (e.g. running from _build/_debugbuild with ./data/...),
+		//    try resolving relative to the parent directory (typically project root).
+		boost::filesystem::path canonicalVideoPath;
+		try
+		{
+			canonicalVideoPath = boost::filesystem::canonical(_videoPath);
+		}
+		catch (const boost::filesystem::filesystem_error &)
+		{
+			try
+			{
+				auto cwd = boost::filesystem::current_path();
+				auto projectRoot = cwd.parent_path();
+				canonicalVideoPath = boost::filesystem::canonical(projectRoot / _videoPath);
+			}
+			catch (const boost::filesystem::filesystem_error &)
+			{
+				auto errMsg = "Video File name not in proper format.Check the filename sent as props. "
+					"If you want to read a file with custom name instead, please disable parseFS flag.";
+				throw AIPException(AIP_FATAL, errMsg);
+			}
+		}
+
 		videoPath = canonicalVideoPath.string();
 		parseFS = _parseFS;
 		bFramesEnabled = _bFramesEnabled;
