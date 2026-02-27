@@ -1,6 +1,9 @@
 #pragma once
 #include "AIPExceptions.h"
 #include "Module.h"
+#include <functional>
+
+typedef std::function<void(const std::string&)> DeletedDirCallback;
 
 class ArchiveSpaceManagerProps : public ModuleProps {
 public:
@@ -11,18 +14,6 @@ public:
     pathToWatch = _pathToWatch;
     samplingFreq = _samplingFreq;
     fps = 0.001;
-
-    // auto totalSpace = boost::filesystem::space(pathToWatch);
-    // if ((lowerWaterMark > upperWaterMark) || (upperWaterMark >
-    // totalSpace.capacity))
-    // {
-    // 	LOG_ERROR << "Please enter correct properties!";
-    // 	std::string errorMsg = "Incorrect properties set for Archive Manager.
-    // TotalDiskCapacity <" + std::to_string(totalSpace.capacity) +
-    // ">lowerWaterMark<" + std::to_string(lowerWaterMark) + "> UpperWaterMark<"
-    // + std::to_string(upperWaterMark) + ">"; 	throw AIPException(AIP_FATAL,
-    // errorMsg);
-    // }
   }
 
   ArchiveSpaceManagerProps(uint64_t maxSizeAllowed, string _pathToWatch,
@@ -32,18 +23,6 @@ public:
     pathToWatch = _pathToWatch;
     samplingFreq = _samplingFreq;
     fps = 0.001;
-
-    // auto totalSpace = boost::filesystem::space(pathToWatch);
-    // if ((lowerWaterMark > upperWaterMark) || (upperWaterMark >
-    // totalSpace.capacity))
-    // {
-    // 	LOG_ERROR << "Please enter correct properties!";
-    // 	std::string errorMsg = "Incorrect properties set for Archive Manager.
-    // TotalDiskCapacity <" + std::to_string(totalSpace.capacity) +
-    // ">lowerWaterMark<" + std::to_string(lowerWaterMark) + "> UpperWaterMark<"
-    // + std::to_string(upperWaterMark) + ">"; 	throw AIPException(AIP_FATAL,
-    // errorMsg);
-    // }
   }
 
   uint64_t lowerWaterMark; // Lower disk space
@@ -79,6 +58,7 @@ public:
   void setProps(ArchiveSpaceManagerProps &props);
   ArchiveSpaceManagerProps getProps();
 
+  void registerDeletedDirCallback(DeletedDirCallback callback);
 protected:
   bool produce();
   bool validateInputPins();
@@ -90,5 +70,6 @@ protected:
 private:
   class Detail;
   boost::shared_ptr<Detail> mDetail;
+  DeletedDirCallback mDeletedDirCallback;
   bool checkDirectory = true;
 };

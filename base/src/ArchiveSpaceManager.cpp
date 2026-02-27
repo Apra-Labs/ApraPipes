@@ -8,14 +8,22 @@
 class ArchiveSpaceManager::Detail
 {
 public:
-  Detail(ArchiveSpaceManagerProps &_props) : mProps(_props) {}
+  Detail(ArchiveSpaceManagerProps &_props) : mProps(_props), mParent(nullptr), mDeletedDirCallback(nullptr) {}
 
   ~Detail() {}
 
+  void setParent(ArchiveSpaceManager* parent) { mParent = parent; }
+
   void setProps(ArchiveSpaceManagerProps _props) { mProps = _props; }
 
- uint64_t estimateDirectorySize(boost::filesystem::path _dir)
-{
+  void registerCallback(DeletedDirCallback callback)
+  {
+    mDeletedDirCallback = callback;
+    LOG_INFO << "Callback registered in Detail class";
+  }
+
+  uint64_t estimateDirectorySize(boost::filesystem::path _dir)
+  {
     uint64_t dirSize = 0;
     int sample = 0;
     int inCount = 0;
@@ -34,7 +42,7 @@ public:
         {
             if (boost::filesystem::is_regular_file(entry))
             {
-                if (countFreq % mProps.samplingFreq == 0)
+                if (mProps.samplingFreq > 0 && countFreq % mProps.samplingFreq == 0)
                 {
                     sample = (rand() % mProps.samplingFreq);
                     inCount = 0;
@@ -117,6 +125,33 @@ public:
     }
   return oldestHour;
   }
+
+  void invokeDeleteCallback(const std::string& deletedDir)
+  {
+    LOG_INFO << "========================================";
+    LOG_INFO << "invokeDeleteCallback called for: " << deletedDir;
+    LOG_INFO << "mParent is: " << (mParent ? "NOT NULL" : "NULL");
+    LOG_INFO << "mDeletedDirCallback is set: " << (mDeletedDirCallback ? "YES" : "NO");
+    LOG_INFO << "========================================";
+    
+    if (mDeletedDirCallback)
+    {
+      try
+      {
+        LOG_INFO << "Invoking callback for deleted directory: " << deletedDir;
+        mDeletedDirCallback(deletedDir);
+        LOG_INFO << "Callback invoked successfully";
+      }
+      catch (const std::exception& e)
+      {
+        LOG_ERROR << "Exception in callback: " << e.what();
+      }
+    }
+    else
+    {
+      LOG_WARNING << "Callback not set or mParent is null - callback not invoked";
+    }
+  }
   
    void manageDirectory()
   {
@@ -127,6 +162,8 @@ public:
     };
     while (archiveSize > mProps.lowerWaterMark)
     {
+      foldVector.clear(); // Clear at the beginning of each iteration
+      
       for (const auto &camFolder :
            boost::filesystem::directory_iterator(mProps.pathToWatch))
       {
@@ -171,38 +208,49 @@ public:
 
       uint64_t tempSize = 0;
       boost::filesystem::path delDir = foldVector[0].first;
+      std::string deletedDirPath = delDir.string(); // Store path before deletion
 
-        if (!boost::filesystem::exists(delDir) || !boost::filesystem::is_directory(delDir))
-       {
-          LOG_ERROR << "Directory to delete does not exist or is not a directory: " << delDir.string();
-          foldVector.clear();
-          continue;
-       }
-       BOOST_LOG_TRIVIAL(info) << "Deleting folder : " << delDir.string();
-       tempSize = estimateDirectorySize(delDir);
-       archiveSize = archiveSize - tempSize;
-       LOG_INFO<<"archive size after deleting"<<archiveSize;
+      if (!boost::filesystem::exists(delDir) || !boost::filesystem::is_directory(delDir))
+      {
+        LOG_ERROR << "Directory to delete does not exist or is not a directory: " << delDir.string();
+        foldVector.clear();
+        continue;
+      }
+      BOOST_LOG_TRIVIAL(info) << "Deleting folder : " << delDir.string();
+      tempSize = estimateDirectorySize(delDir);
+      archiveSize = archiveSize - tempSize;
+      LOG_INFO<<"archive size after deleting"<<archiveSize;
       try
       {
         boost::filesystem::remove_all(delDir);
+        
+        invokeDeleteCallback(deletedDirPath);
+        
+        // Try to delete parent directory if empty
         boost::filesystem::path parentDir = delDir.parent_path();
-         if (boost::filesystem::exists(parentDir) && boost::filesystem::is_directory(parentDir) && boost::filesystem::is_empty(parentDir))
+        if (boost::filesystem::exists(parentDir) && 
+            boost::filesystem::is_directory(parentDir) && 
+            boost::filesystem::is_empty(parentDir))
         {
-            BOOST_LOG_TRIVIAL(info) << "Deleting parent directory : " << parentDir.string();
-            try {
-                boost::filesystem::remove_all(parentDir);
-            } catch (const std::exception& e) {
-                LOG_ERROR << "Could not delete parent directory: " << e.what();
-            }
+          BOOST_LOG_TRIVIAL(info) << "Deleting parent directory : " << parentDir.string();
+          try
+          {
+            boost::filesystem::remove_all(parentDir);
+            // Invoke callback for parent directory deletion as well
+            invokeDeleteCallback(parentDir.string());
+          }
+          catch (const std::exception& e)
+          {
+            LOG_ERROR << "Could not delete parent directory: " << e.what();
+          }
         }
       }
-      catch (...)
+      catch (const std::exception& e)
       {
-        LOG_ERROR << "Could not delete directory!..";
+        LOG_ERROR << "Could not delete directory: " << e.what();
       }
-      foldVector.clear();
-      LOG_INFO<<"clearing the folder vectors";
-   
+
+      LOG_INFO<<"Cleared the folder vectors";
     }
   }
   uint64_t diskOperation()
@@ -225,12 +273,15 @@ public:
   ArchiveSpaceManagerProps mProps;
   uint64_t archiveSize = 0;
   std::vector<std::pair<boost::filesystem::path, uint64_t>> foldVector;
+  ArchiveSpaceManager* mParent;
+  std::function<void(const std::string&)> mDeletedDirCallback;  // FIX 4: Store callback in Detail
 };
 
 ArchiveSpaceManager::ArchiveSpaceManager(ArchiveSpaceManagerProps _props)
     : Module(SOURCE, "ArchiveSpaceManager", _props)
 {
   mDetail.reset(new Detail(_props));
+  mDetail->setParent(this);
 }
 
 bool ArchiveSpaceManager::validateInputPins() { return true; }
@@ -273,6 +324,20 @@ bool ArchiveSpaceManager::handlePropsChange(frame_sp &frame)
   auto ret = Module::handlePropsChange(frame, props);
   mDetail->setProps(props);
   return ret;
+}
+
+void ArchiveSpaceManager::registerDeletedDirCallback(DeletedDirCallback callback)
+{
+  LOG_INFO << "ArchiveSpaceManager::registerDeletedDirCallback called";
+  if (mDetail)
+  {
+    mDetail->registerCallback(callback);
+    LOG_INFO << "Callback registered successfully in ArchiveSpaceManager";
+  }
+  else
+  {
+    LOG_ERROR << "mDetail is null - cannot register callback";
+  }
 }
 
 bool ArchiveSpaceManager::produce()
