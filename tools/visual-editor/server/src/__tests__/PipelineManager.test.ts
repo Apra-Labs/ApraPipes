@@ -309,6 +309,33 @@ describe('PipelineManager', () => {
     });
   });
 
+  describe('COMPLETED status handling', () => {
+    it('allows stopping a COMPLETED pipeline', async () => {
+      const id = manager.create(mockConfig);
+      await manager.start(id);
+
+      // Manually set status to COMPLETED (simulating endOfStream event)
+      const instance = manager.get(id)!;
+      instance.status = 'COMPLETED';
+
+      // Should not throw - stop should work on COMPLETED pipelines
+      await manager.stop(id);
+      expect(manager.getStatus(id)).toBe('STOPPED');
+    });
+
+    it('allows deleting a COMPLETED pipeline', async () => {
+      const id = manager.create(mockConfig);
+      await manager.start(id);
+
+      // Manually set status to COMPLETED
+      const instance = manager.get(id)!;
+      instance.status = 'COMPLETED';
+
+      await manager.delete(id);
+      expect(manager.get(id)).toBeUndefined();
+    });
+  });
+
   describe('mock mode health events', () => {
     it('emits health events when pipeline is running', async () => {
       const healthHandler = vi.fn();

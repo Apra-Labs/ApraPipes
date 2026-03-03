@@ -224,7 +224,7 @@ export class PipelineManager extends EventEmitter {
       throw new Error(`Pipeline not found: ${id}`);
     }
 
-    if (instance.status !== 'RUNNING') {
+    if (instance.status !== 'RUNNING' && instance.status !== 'COMPLETED') {
       throw new Error(`Pipeline not running: ${id}`);
     }
 
@@ -272,8 +272,8 @@ export class PipelineManager extends EventEmitter {
       throw new Error(`Pipeline not found: ${id}`);
     }
 
-    // Stop if running
-    if (instance.status === 'RUNNING') {
+    // Stop if running or completed
+    if (instance.status === 'RUNNING' || instance.status === 'COMPLETED') {
       await this.stop(id);
     }
 
@@ -426,6 +426,23 @@ export class PipelineManager extends EventEmitter {
       instance.errors.push(runtimeError);
 
       this.emit('error', { pipelineId: instance.id, ...runtimeError });
+    });
+
+    // Set up lifecycle event listeners
+    pipeline.on('endOfStream', () => {
+      if (instance.status === 'RUNNING') {
+        instance.status = 'COMPLETED';
+        logger.info(`Pipeline completed (end of stream): ${instance.id}`);
+        this.emit('status', { pipelineId: instance.id, status: 'COMPLETED' });
+      }
+    });
+
+    pipeline.on('stopped', () => {
+      if (instance.status === 'RUNNING') {
+        instance.status = 'STOPPED';
+        logger.info(`Pipeline stopped (native event): ${instance.id}`);
+        this.emit('status', { pipelineId: instance.id, status: 'STOPPED' });
+      }
     });
 
     // Initialize and run the pipeline
