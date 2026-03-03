@@ -31,6 +31,9 @@ const __dirname = path.dirname(__filename);
 
 const logger = createLogger('PipelineManager');
 
+/** Maximum log entries per pipeline instance */
+const LOG_BUFFER_MAX = 1000;
+
 /**
  * Try to load the native aprapipes addon
  */
@@ -158,9 +161,9 @@ export class PipelineManager extends EventEmitter {
     };
 
     instance.logs.push(entry);
-    // Ring buffer: keep only the last 1000 entries
-    if (instance.logs.length > 1000) {
-      instance.logs = instance.logs.slice(instance.logs.length - 1000);
+    // Ring buffer: keep only the last LOG_BUFFER_MAX entries
+    if (instance.logs.length > LOG_BUFFER_MAX) {
+      instance.logs = instance.logs.slice(instance.logs.length - LOG_BUFFER_MAX);
     }
 
     this.emit('log', { pipelineId: instance.id, data: entry });
