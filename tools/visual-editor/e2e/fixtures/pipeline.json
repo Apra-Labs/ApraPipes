@@ -1,78 +1,32 @@
 {
-  "config": {
-    "pipeline": {
-      "name": "BMP Converter Pipeline",
-      "description": "Converts test signal frames to BMP images and saves them to disk. Chain: TestSignalGenerator -> ColorConversion -> BMPConverter -> FileWriter"
-    },
-    "modules": {
-      "generator": {
-        "type": "TestSignalGenerator",
-        "props": {
-          "width": 320,
-          "height": 240,
-          "maxFrames": 100
-        },
-        "properties": {
-          "width": 640,
-          "height": 480,
-          "maxFrames": 10
-        }
-      },
-      "color_convert": {
-        "type": "ColorConversion",
-        "props": {
-          "conversionType": "YUV420PLANAR_TO_RGB"
-        },
-        "properties": {
-          "conversionType": "YUV420PLANAR_TO_RGB"
-        }
-      },
-      "bmp_encoder": {
-        "type": "BMPConverter"
-      },
-      "writer": {
-        "type": "FileWriterModule",
-        "props": {
-          "strFullFileNameWithPattern": "./data/testOutput/bmp_????.bmp"
-        },
-        "properties": {
-          "strFullFileNameWithPattern": "/Users/akhil/test_??.bmp"
-        }
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "properties": {
+        "width": 640,
+        "height": 480,
+        "maxFrames": 10
       }
     },
-    "connections": [
-      {
-        "from": "generator",
-        "to": "color_convert"
-      },
-      {
-        "from": "color_convert",
-        "to": "bmp_encoder"
-      },
-      {
-        "from": "bmp_encoder",
-        "to": "writer"
+    "color_convert": {
+      "type": "ColorConversion",
+      "properties": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
       }
-    ]
-  },
-  "layout": {
-    "nodes": {
-      "generator": {
-        "x": 100,
-        "y": 100
-      },
-      "color_convert": {
-        "x": 380,
-        "y": 100
-      },
-      "bmp_encoder": {
-        "x": 100,
-        "y": 300
-      },
-      "writer": {
-        "x": 380,
-        "y": 300
+    },
+    "bmp_encoder": {
+      "type": "BMPConverter"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "properties": {
+        "strFullFileNameWithPattern": "/tmp/aprapipes_test_??.bmp"
       }
     }
-  }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "bmp_encoder" },
+    { "from": "bmp_encoder", "to": "writer" }
+  ]
 }
