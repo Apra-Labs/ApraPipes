@@ -137,7 +137,15 @@ export function LogsPanel() {
   const filtered = logs.filter((entry) => {
     if (levelFilter !== 'all' && entry.level !== levelFilter) return false;
     if (sourceFilter !== 'all' && entry.source !== sourceFilter) return false;
-    if (searchText && !entry.message.toLowerCase().includes(searchText.toLowerCase())) return false;
+    if (searchText) {
+      const needle = searchText.toLowerCase();
+      if (
+        !entry.message.toLowerCase().includes(needle) &&
+        !entry.source.toLowerCase().includes(needle)
+      ) {
+        return false;
+      }
+    }
     return true;
   });
 
@@ -226,6 +234,11 @@ export function LogsPanel() {
         </div>
 
         <div className="flex items-center gap-2">
+          {filtered.length !== logs.length && logs.length > 0 && (
+            <span className="text-xs text-gray-500">
+              {filtered.length} of {logs.length}
+            </span>
+          )}
           {!autoScroll && (
             <button
               onClick={() => {
