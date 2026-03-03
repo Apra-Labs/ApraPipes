@@ -9,14 +9,14 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'http';
 import { createLogger } from '../utils/logger.js';
 import { getPipelineManager } from '../services/PipelineManager.js';
-import type { HealthEvent, ErrorEvent, PipelineStatus } from '../types/pipeline.js';
+import type { HealthEvent, ErrorEvent, PipelineStatus, LogEntry } from '../types/pipeline.js';
 
 const logger = createLogger('MetricsStream');
 
 /**
  * WebSocket message types
  */
-export type WebSocketMessageType = 'subscribe' | 'unsubscribe' | 'health' | 'error' | 'status' | 'subscribed' | 'unsubscribed' | 'error_message';
+export type WebSocketMessageType = 'subscribe' | 'unsubscribe' | 'health' | 'error' | 'status' | 'log' | 'subscribed' | 'unsubscribed' | 'error_message';
 
 /**
  * Base message structure
@@ -71,6 +71,15 @@ export interface StatusMessage extends WebSocketMessage {
 }
 
 /**
+ * Log event message to client
+ */
+export interface LogMessage extends WebSocketMessage {
+  event: 'log';
+  pipelineId: string;
+  data: LogEntry;
+}
+
+/**
  * Client connection with subscriptions
  */
 interface ClientConnection {
@@ -121,6 +130,12 @@ export class MetricsStream {
     };
     manager.on('status', statusHandler);
     this.eventHandlers.set('status', statusHandler);
+
+    const logHandler = (event: { pipelineId: string; data: LogEntry }) => {
+      this.broadcastLog(event.pipelineId, event.data);
+    };
+    manager.on('log', logHandler);
+    this.eventHandlers.set('log', logHandler);
 
     logger.info('MetricsStream WebSocket server initialized on /ws');
   }
@@ -315,6 +330,24 @@ export class MetricsStream {
       event: 'status',
       pipelineId,
       data: { status },
+    };
+
+    this.broadcast(subscribers, message);
+  }
+
+  /**
+   * Broadcast log event to pipeline subscribers
+   */
+  private broadcastLog(pipelineId: string, entry: LogEntry): void {
+    const subscribers = this.pipelineSubscribers.get(pipelineId);
+    if (!subscribers || subscribers.size === 0) {
+      return;
+    }
+
+    const message: LogMessage = {
+      event: 'log',
+      pipelineId,
+      data: entry,
     };
 
     this.broadcast(subscribers, message);
