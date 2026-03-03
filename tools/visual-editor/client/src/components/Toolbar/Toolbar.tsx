@@ -34,7 +34,6 @@ export function Toolbar() {
   const createPipeline = useRuntimeStore((state) => state.createPipeline);
   const startPipeline = useRuntimeStore((state) => state.startPipeline);
   const stopPipeline = useRuntimeStore((state) => state.stopPipeline);
-  const deletePipeline = useRuntimeStore((state) => state.deletePipeline);
   const connect = useRuntimeStore((state) => state.connect);
   const pipelineId = useRuntimeStore((state) => state.pipelineId);
 
@@ -202,12 +201,10 @@ export function Toolbar() {
   const handleStop = useCallback(async () => {
     try {
       await stopPipeline();
-      // Optionally delete after stopping
-      await deletePipeline();
     } catch (error) {
       alert(`Failed to stop pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }, [stopPipeline, deletePipeline]);
+  }, [stopPipeline]);
 
   // Validate pipeline
   const handleValidate = useCallback(async () => {
