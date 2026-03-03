@@ -159,7 +159,6 @@ export function ProblemsPanel() {
   const clearErrors = useRuntimeStore((state) => state.clearErrors);
 
   const [filter, setFilter] = useState<FilterType>('all');
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Convert validation issues to display format
   const validationIssues: DisplayIssue[] = (validationResult?.issues || []).map((issue) => ({
@@ -229,43 +228,11 @@ export function ProblemsPanel() {
     URL.revokeObjectURL(url);
   }, [runtimeStatus, validationResult, runtimeErrors]);
 
-  if (isCollapsed) {
-    return (
-      <div className="border-t border-gray-200 bg-gray-50">
-        <button
-          onClick={() => setIsCollapsed(false)}
-          className="w-full px-4 py-2 flex items-center justify-between text-sm text-gray-600 hover:bg-gray-100"
-        >
-          <span className="font-medium">Problems</span>
-          <div className="flex items-center gap-2">
-            {errorCount > 0 && (
-              <span className="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded">
-                {errorCount} errors
-              </span>
-            )}
-            {warningCount > 0 && (
-              <span className="px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded">
-                {warningCount} warnings
-              </span>
-            )}
-            {runtimeCount > 0 && (
-              <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">
-                {runtimeCount} runtime
-              </span>
-            )}
-            <span>▲</span>
-          </div>
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="border-t border-gray-200 bg-white flex flex-col h-48">
+    <div className="bg-white flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <h3 className="font-medium text-sm text-gray-700">Problems</h3>
           <div className="flex items-center gap-1">
             <FilterButton
               type="all"
@@ -331,13 +298,6 @@ export function ProblemsPanel() {
               Clear
             </button>
           )}
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-1 text-gray-500 hover:text-gray-700"
-            aria-label="Collapse panel"
-          >
-            ▼
-          </button>
         </div>
       </div>
 

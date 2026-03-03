@@ -70,7 +70,7 @@ const initialState: WorkspaceState = {
   recentFiles: loadRecentFiles(),
 };
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '';
 
 /**
  * Workspace store for managing file operations

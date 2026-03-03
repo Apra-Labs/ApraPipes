@@ -4,7 +4,7 @@ import { StatusBar } from './components/Toolbar/StatusBar';
 import { ModulePalette } from './components/Panels/ModulePalette';
 import { PropertyPanel } from './components/Panels/PropertyPanel';
 import { JsonView } from './components/Panels/JsonView';
-import { ProblemsPanel } from './components/Panels/ProblemsPanel';
+import { BottomPanel } from './components/Panels/BottomPanel';
 import { Canvas } from './components/Canvas/Canvas';
 import { api } from './services/api';
 import { usePipelineStore } from './store/pipelineStore';
@@ -97,8 +97,8 @@ function App() {
           )}
         </div>
 
-        {/* Problems Panel */}
-        <ProblemsPanel />
+        {/* Bottom Panel: Problems + Logs tabs */}
+        <BottomPanel />
       </div>
 
       {/* Status Bar */}

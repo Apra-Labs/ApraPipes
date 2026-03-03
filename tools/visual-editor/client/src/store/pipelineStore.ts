@@ -67,7 +67,7 @@ const initialState: PipelineState = {
   isValidating: false,
 };
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '';
 
 /**
  * Sync validation issues with canvas node states

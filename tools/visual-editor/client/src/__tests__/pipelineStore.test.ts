@@ -268,7 +268,7 @@ describe('pipelineStore', () => {
       const result = await getState().validate();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/validate',
+        '/api/validate',
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

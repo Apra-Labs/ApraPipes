@@ -117,7 +117,7 @@ describe('workspaceStore', () => {
       await useWorkspaceStore.getState().saveWorkspace('/test/project');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/workspace/save',
+        '/api/workspace/save',
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -137,7 +137,7 @@ describe('workspaceStore', () => {
       await useWorkspaceStore.getState().saveWorkspace();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/workspace/save',
+        '/api/workspace/save',
         expect.objectContaining({
           body: expect.stringContaining('/existing/path'),
         })
@@ -187,7 +187,7 @@ describe('workspaceStore', () => {
       await useWorkspaceStore.getState().openWorkspace('/test/project');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/workspace/load',
+        '/api/workspace/load',
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

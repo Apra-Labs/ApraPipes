@@ -232,22 +232,11 @@ describe('ProblemsPanel', () => {
     });
   });
 
-  describe('collapsed state', () => {
-    it('can be collapsed', () => {
-      useRuntimeStore.setState({
-        errors: [
-          {
-            moduleId: 'test',
-            message: 'Error',
-            timestamp: Date.now(),
-          },
-        ],
-      });
-
+  describe('panel rendering', () => {
+    it('always renders the expanded filter bar', () => {
       render(<ProblemsPanel />);
-
-      // Panel is expanded initially, collapse button is visible
-      expect(screen.getByLabelText('Collapse panel')).toBeInTheDocument();
+      // Header with filters is always visible (collapse is handled by BottomPanel)
+      expect(screen.getByText('All (0)')).toBeInTheDocument();
     });
   });
 
