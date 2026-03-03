@@ -20,6 +20,8 @@ import type {
   RuntimeError,
   HealthEvent,
   ErrorEvent,
+  LogEntry,
+  LogLevel,
 } from '../types/pipeline.js';
 
 // Create require function for loading native addons in ESM context
@@ -143,6 +145,28 @@ export class PipelineManager extends EventEmitter {
   }
 
   /**
+   * Add a log entry to a pipeline instance and emit it
+   */
+  private addLog(instance: PipelineInstance, level: LogLevel, source: string, message: string, details?: Record<string, unknown>): void {
+    const entry: LogEntry = {
+      id: randomUUID(),
+      timestamp: Date.now(),
+      level,
+      source,
+      message,
+      ...(details && { details }),
+    };
+
+    instance.logs.push(entry);
+    // Ring buffer: keep only the last 1000 entries
+    if (instance.logs.length > 1000) {
+      instance.logs = instance.logs.slice(instance.logs.length - 1000);
+    }
+
+    this.emit('log', { pipelineId: instance.id, data: entry });
+  }
+
+  /**
    * Create a new pipeline from configuration
    */
   create(config: PipelineConfig): string {
@@ -168,8 +192,10 @@ export class PipelineManager extends EventEmitter {
     }
 
     this.pipelines.set(id, instance);
-    logger.info(`Pipeline created: ${id} with ${Object.keys(config.modules).length} modules`);
+    const moduleCount = Object.keys(config.modules).length;
+    logger.info(`Pipeline created: ${id} with ${moduleCount} modules`);
 
+    this.addLog(instance, 'info', 'pipeline', `Pipeline created with ${moduleCount} modules`);
     this.emit('created', { pipelineId: id, status: instance.status });
     return id;
   }
@@ -189,6 +215,7 @@ export class PipelineManager extends EventEmitter {
 
     instance.status = 'CREATING';
     this.emit('status', { pipelineId: id, status: instance.status });
+    this.addLog(instance, 'info', 'pipeline', 'Starting pipeline...');
 
     try {
       if (this.useMockMode) {
@@ -200,6 +227,7 @@ export class PipelineManager extends EventEmitter {
       instance.status = 'RUNNING';
       instance.startTime = Date.now();
       logger.info(`Pipeline started: ${id}`);
+      this.addLog(instance, 'info', 'pipeline', 'Pipeline running');
       this.emit('status', { pipelineId: id, status: instance.status });
     } catch (error) {
       instance.status = 'ERROR';
@@ -210,6 +238,7 @@ export class PipelineManager extends EventEmitter {
         timestamp: Date.now(),
       });
       logger.error(`Pipeline start failed: ${id}`, error);
+      this.addLog(instance, 'error', 'pipeline', `Failed to start: ${errorMessage}`);
       this.emit('status', { pipelineId: id, status: instance.status });
       this.emit('error', { pipelineId: id, moduleId: 'pipeline', message: errorMessage });
       throw error;
@@ -241,10 +270,13 @@ export class PipelineManager extends EventEmitter {
 
       instance.status = 'STOPPED';
       logger.info(`Pipeline stopped: ${id}`);
+      this.addLog(instance, 'info', 'pipeline', 'Pipeline stopped by user');
       this.emit('status', { pipelineId: id, status: instance.status });
     } catch (error) {
       instance.status = 'ERROR';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error(`Pipeline stop failed: ${id}`, error);
+      this.addLog(instance, 'error', 'pipeline', `Failed to stop: ${errorMessage}`);
       this.emit('status', { pipelineId: id, status: instance.status });
       throw error;
     }
@@ -294,6 +326,7 @@ export class PipelineManager extends EventEmitter {
       }
     }
 
+    this.addLog(instance, 'info', 'pipeline', 'Pipeline deleted');
     this.pipelines.delete(id);
     logger.info(`Pipeline deleted: ${id}`);
     this.emit('deleted', { pipelineId: id });
@@ -395,6 +428,7 @@ export class PipelineManager extends EventEmitter {
 
     // Convert config to the format expected by the addon
     const pipelineConfig = this.convertToPipelineConfig(instance.config);
+    this.addLog(instance, 'debug', 'pipeline', `Config sent to addon (${pipelineConfig.length} bytes)`);
 
     // Create native pipeline
     const pipeline = this.nativeAddon.createPipeline(pipelineConfig);
@@ -426,6 +460,8 @@ export class PipelineManager extends EventEmitter {
       };
       instance.errors.push(runtimeError);
 
+      const codeStr = runtimeError.code ? ` (code: ${runtimeError.code})` : '';
+      this.addLog(instance, 'error', runtimeError.moduleId, `${runtimeError.message}${codeStr}`);
       this.emit('error', { pipelineId: instance.id, ...runtimeError });
     });
 
@@ -434,6 +470,7 @@ export class PipelineManager extends EventEmitter {
       if (instance.status === 'RUNNING') {
         instance.status = 'COMPLETED';
         logger.info(`Pipeline completed (end of stream): ${instance.id}`);
+        this.addLog(instance, 'info', 'pipeline', 'Pipeline completed \u2014 end of stream');
         this.emit('status', { pipelineId: instance.id, status: 'COMPLETED' });
       }
     });
@@ -442,6 +479,7 @@ export class PipelineManager extends EventEmitter {
       if (instance.status === 'RUNNING') {
         instance.status = 'STOPPED';
         logger.info(`Pipeline stopped (native event): ${instance.id}`);
+        this.addLog(instance, 'info', 'pipeline', 'Pipeline stopped (native event)');
         this.emit('status', { pipelineId: instance.id, status: 'STOPPED' });
       }
     });

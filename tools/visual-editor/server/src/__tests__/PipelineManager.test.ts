@@ -336,6 +336,63 @@ describe('PipelineManager', () => {
     });
   });
 
+  describe('log emission', () => {
+    it('emits log event on pipeline create', () => {
+      const logHandler = vi.fn();
+      manager.on('log', logHandler);
+
+      const id = manager.create(mockConfig);
+
+      expect(logHandler).toHaveBeenCalled();
+      const logEvent = logHandler.mock.calls[0][0];
+      expect(logEvent.pipelineId).toBe(id);
+      expect(logEvent.data.level).toBe('info');
+      expect(logEvent.data.source).toBe('pipeline');
+      expect(logEvent.data.message).toContain('Pipeline created');
+    });
+
+    it('accumulates logs in pipeline instance', async () => {
+      const id = manager.create(mockConfig);
+      await manager.start(id);
+
+      const instance = manager.get(id)!;
+      // Should have at least: "Pipeline created", "Starting pipeline...", "Pipeline running"
+      expect(instance.logs.length).toBeGreaterThanOrEqual(3);
+      expect(instance.logs[0].message).toContain('Pipeline created');
+      expect(instance.logs[1].message).toBe('Starting pipeline...');
+      expect(instance.logs[2].message).toBe('Pipeline running');
+    });
+
+    it('emits log on pipeline stop', async () => {
+      const id = manager.create(mockConfig);
+      await manager.start(id);
+
+      const logHandler = vi.fn();
+      manager.on('log', logHandler);
+
+      await manager.stop(id);
+
+      const stopLog = logHandler.mock.calls.find(
+        (call) => call[0].data.message === 'Pipeline stopped by user'
+      );
+      expect(stopLog).toBeDefined();
+    });
+
+    it('emits log on pipeline delete', async () => {
+      const id = manager.create(mockConfig);
+
+      const logHandler = vi.fn();
+      manager.on('log', logHandler);
+
+      await manager.delete(id);
+
+      const deleteLog = logHandler.mock.calls.find(
+        (call) => call[0].data.message === 'Pipeline deleted'
+      );
+      expect(deleteLog).toBeDefined();
+    });
+  });
+
   describe('mock mode health events', () => {
     it('emits health events when pipeline is running', async () => {
       const healthHandler = vi.fn();
