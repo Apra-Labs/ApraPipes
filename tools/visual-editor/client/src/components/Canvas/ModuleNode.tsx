@@ -32,10 +32,11 @@ interface ModuleNodeProps {
 /**
  * Status indicator badge component
  */
-function StatusBadge({ status }: { status: 'idle' | 'running' | 'error' }) {
+function StatusBadge({ status }: { status: 'idle' | 'running' | 'completed' | 'error' }) {
   const colors = {
     idle: 'bg-gray-400',
     running: 'bg-green-500 animate-pulse',
+    completed: 'bg-green-600',
     error: 'bg-red-500',
   };
 
@@ -74,9 +75,10 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
   const runtimeStatus = useRuntimeStore((state) => state.status);
   const runtimeMetrics = useRuntimeStore((state) => state.moduleMetrics[data.label] || null);
 
-  // Determine effective status (use runtime status if running, else data status)
+  // Determine effective status (use runtime status if running/completed, else data status)
   const isRunning = runtimeStatus === 'RUNNING';
-  const effectiveStatus = isRunning ? 'running' : data.status;
+  const isCompleted = runtimeStatus === 'COMPLETED';
+  const effectiveStatus = isRunning ? 'running' : isCompleted ? 'completed' : data.status;
   const metrics = isRunning ? runtimeMetrics : data.metrics;
 
   const hasErrors = (data.validationErrors ?? 0) > 0;
@@ -87,6 +89,7 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
     if (hasErrors) return 'border-red-500 shadow-red-100';
     if (hasWarnings) return 'border-yellow-500 shadow-yellow-100';
     if (effectiveStatus === 'running') return 'border-green-500 shadow-green-200';
+    if (effectiveStatus === 'completed') return 'border-green-600 shadow-green-100';
     if (effectiveStatus === 'error') return 'border-red-500 shadow-red-200';
     return 'border-gray-300';
   };

@@ -19,7 +19,7 @@ export interface ModuleNodeData {
   inputs: Array<{ name: string; frame_types: string[] }>;
   outputs: Array<{ name: string; frame_types: string[] }>;
   properties: Record<string, unknown>;
-  status: 'idle' | 'running' | 'error';
+  status: 'idle' | 'running' | 'completed' | 'error';
   metrics?: {
     fps: number;
     qlen: number;

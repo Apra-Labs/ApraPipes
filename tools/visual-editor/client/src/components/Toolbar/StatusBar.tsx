@@ -48,6 +48,9 @@ export function StatusBar() {
         setDuration(Date.now() - startTime);
       }, 1000);
       return () => clearInterval(interval);
+    } else if (runtimeStatus === 'COMPLETED' && startTime) {
+      // Freeze duration at the final value
+      setDuration(Date.now() - startTime);
     } else {
       setDuration(0);
     }
@@ -70,7 +73,7 @@ export function StatusBar() {
   const warningCount = validationResult?.issues.filter((i) => i.level === 'warning').length ?? 0;
 
   // Map runtime status to display status
-  const displayStatus = runtimeStatus.toLowerCase() as 'idle' | 'running' | 'stopped' | 'error' | 'creating' | 'stopping';
+  const displayStatus = runtimeStatus.toLowerCase() as 'idle' | 'running' | 'stopped' | 'completed' | 'error' | 'creating' | 'stopping';
 
   return (
     <footer className="h-6 border-t border-border bg-muted/50 flex items-center px-4 text-xs">
@@ -78,7 +81,7 @@ export function StatusBar() {
       <div className="flex items-center gap-2">
         <StatusIndicator status={displayStatus} />
         <span className="text-muted-foreground capitalize">{displayStatus}</span>
-        {runtimeStatus === 'RUNNING' && startTime && (
+        {(runtimeStatus === 'RUNNING' || runtimeStatus === 'COMPLETED') && startTime && (
           <span className="text-muted-foreground">
             ({formatDuration(duration)})
           </span>
@@ -144,10 +147,14 @@ export function StatusBar() {
   );
 }
 
-type DisplayStatus = 'idle' | 'running' | 'stopped' | 'error' | 'creating' | 'stopping';
+type DisplayStatus = 'idle' | 'running' | 'stopped' | 'completed' | 'error' | 'creating' | 'stopping';
 
 function StatusIndicator({ status }: { status: DisplayStatus }) {
-  const colors: Record<DisplayStatus, string> = {
+  if (status === 'completed') {
+    return <CheckCircle className="w-3 h-3 text-green-600" />;
+  }
+
+  const colors: Record<string, string> = {
     idle: 'text-gray-400',
     running: 'text-green-500 animate-pulse',
     stopped: 'text-gray-500',
