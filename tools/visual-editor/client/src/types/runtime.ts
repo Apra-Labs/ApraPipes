@@ -36,6 +36,29 @@ export interface RuntimeError {
 }
 
 /**
+ * Log level for pipeline log entries
+ */
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+/**
+ * Structured log entry from pipeline execution
+ */
+export interface LogEntry {
+  /** Unique ID for React keys */
+  id: string;
+  /** Unix timestamp in milliseconds */
+  timestamp: number;
+  /** Log severity level */
+  level: LogLevel;
+  /** Source: moduleId, 'pipeline', or 'addon' */
+  source: string;
+  /** Human-readable log message */
+  message: string;
+  /** Optional structured data */
+  details?: Record<string, unknown>;
+}
+
+/**
  * WebSocket message types
  */
 export type WebSocketMessageType =
@@ -44,6 +67,7 @@ export type WebSocketMessageType =
   | 'health'
   | 'error'
   | 'status'
+  | 'log'
   | 'subscribed'
   | 'unsubscribed'
   | 'error_message';
@@ -93,6 +117,15 @@ export interface StatusMessage extends WebSocketMessage {
   data: {
     status: PipelineStatus;
   };
+}
+
+/**
+ * Log event message
+ */
+export interface LogMessage extends WebSocketMessage {
+  event: 'log';
+  pipelineId: string;
+  data: LogEntry;
 }
 
 /**

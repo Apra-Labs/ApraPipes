@@ -14,10 +14,12 @@ import type {
   PipelineStatus,
   ModuleMetrics,
   RuntimeError,
+  LogEntry,
   ConnectionState,
   HealthMessage,
   ErrorMessage,
   StatusMessage,
+  LogMessage,
 } from '../types/runtime';
 
 const API_BASE = '';
@@ -34,6 +36,8 @@ interface RuntimeState {
   moduleMetrics: Record<string, ModuleMetrics>;
   /** Runtime errors */
   errors: RuntimeError[];
+  /** Pipeline logs (ring buffer, max 500) */
+  logs: LogEntry[];
   /** WebSocket connection state */
   connectionState: ConnectionState;
   /** Pipeline start time */
@@ -60,19 +64,24 @@ interface RuntimeActions {
   onHealthEvent: (message: HealthMessage) => void;
   onErrorEvent: (message: ErrorMessage) => void;
   onStatusEvent: (message: StatusMessage) => void;
+  onLogEvent: (message: LogMessage) => void;
   onConnectionStateChange: (state: ConnectionState) => void;
 
   // Utilities
   clearErrors: () => void;
+  clearLogs: () => void;
   reset: () => void;
   getDuration: () => number | null;
 }
+
+const LOG_BUFFER_MAX = 500;
 
 const initialState: RuntimeState = {
   pipelineId: null,
   status: 'IDLE',
   moduleMetrics: {},
   errors: [],
+  logs: [],
   connectionState: 'disconnected',
   startTime: null,
   isLoading: false,
@@ -234,6 +243,7 @@ export const useRuntimeStore = create<RuntimeState & RuntimeActions>((set, get) 
           status: 'IDLE',
           moduleMetrics: {},
           errors: [],
+          logs: [],
           startTime: null,
           isLoading: false,
         });
@@ -307,12 +317,32 @@ export const useRuntimeStore = create<RuntimeState & RuntimeActions>((set, get) 
       }));
     },
 
+    onLogEvent: (message) => {
+      const { pipelineId: currentId } = get();
+      if (message.pipelineId !== currentId) {
+        return;
+      }
+
+      set((state) => {
+        const logs = [...state.logs, message.data];
+        // Ring buffer: keep only the last LOG_BUFFER_MAX entries
+        if (logs.length > LOG_BUFFER_MAX) {
+          return { logs: logs.slice(logs.length - LOG_BUFFER_MAX) };
+        }
+        return { logs };
+      });
+    },
+
     onConnectionStateChange: (connectionState) => {
       set({ connectionState });
     },
 
     clearErrors: () => {
       set({ errors: [] });
+    },
+
+    clearLogs: () => {
+      set({ logs: [] });
     },
 
     reset: () => {

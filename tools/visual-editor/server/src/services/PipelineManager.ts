@@ -154,6 +154,7 @@ export class PipelineManager extends EventEmitter {
       config,
       metrics: {},
       errors: [],
+      logs: [],
     };
 
     // Initialize metrics for each module

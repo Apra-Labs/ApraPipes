@@ -62,6 +62,29 @@ export interface ErrorEvent {
 }
 
 /**
+ * Log level for pipeline log entries
+ */
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+/**
+ * Structured log entry from pipeline execution
+ */
+export interface LogEntry {
+  /** Unique ID for React keys */
+  id: string;
+  /** Unix timestamp in milliseconds */
+  timestamp: number;
+  /** Log severity level */
+  level: LogLevel;
+  /** Source: moduleId, 'pipeline', or 'addon' */
+  source: string;
+  /** Human-readable log message */
+  message: string;
+  /** Optional structured data */
+  details?: Record<string, unknown>;
+}
+
+/**
  * Pipeline instance interface
  */
 export interface PipelineInstance {
@@ -75,6 +98,8 @@ export interface PipelineInstance {
   metrics: Record<string, ModuleMetrics>;
   /** Runtime errors */
   errors: RuntimeError[];
+  /** Pipeline logs (ring buffer, max 1000) */
+  logs: LogEntry[];
   /** Start time (if running) */
   startTime?: number;
   /** Native pipeline reference (if using real aprapipes) */

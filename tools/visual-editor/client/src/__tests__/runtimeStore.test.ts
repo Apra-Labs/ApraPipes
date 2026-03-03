@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useRuntimeStore } from '../store/runtimeStore';
-import type { HealthMessage, ErrorMessage, StatusMessage } from '../types/runtime';
+import type { HealthMessage, ErrorMessage, StatusMessage, LogMessage, LogEntry } from '../types/runtime';
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -32,6 +32,7 @@ describe('runtimeStore', () => {
       expect(getState().status).toBe('IDLE');
       expect(getState().moduleMetrics).toEqual({});
       expect(getState().errors).toEqual([]);
+      expect(getState().logs).toEqual([]);
       expect(getState().connectionState).toBe('disconnected');
       expect(getState().startTime).toBeNull();
       expect(getState().isLoading).toBe(false);
@@ -280,6 +281,90 @@ describe('runtimeStore', () => {
       expect(getState().moduleMetrics).toEqual({});
       expect(getState().errors).toEqual([]);
       expect(getState().startTime).toBeNull();
+    });
+  });
+
+  describe('onLogEvent', () => {
+    it('adds log entry', () => {
+      useRuntimeStore.setState({ pipelineId: 'test-123' });
+
+      const message: LogMessage = {
+        event: 'log',
+        pipelineId: 'test-123',
+        data: {
+          id: 'log-1',
+          timestamp: Date.now(),
+          level: 'info',
+          source: 'pipeline',
+          message: 'Pipeline started',
+        },
+      };
+
+      getState().onLogEvent(message);
+
+      expect(getState().logs).toHaveLength(1);
+      expect(getState().logs[0].source).toBe('pipeline');
+      expect(getState().logs[0].message).toBe('Pipeline started');
+    });
+
+    it('ignores events for other pipelines', () => {
+      useRuntimeStore.setState({ pipelineId: 'test-123' });
+
+      const message: LogMessage = {
+        event: 'log',
+        pipelineId: 'other-pipeline',
+        data: {
+          id: 'log-1',
+          timestamp: Date.now(),
+          level: 'info',
+          source: 'pipeline',
+          message: 'Pipeline started',
+        },
+      };
+
+      getState().onLogEvent(message);
+
+      expect(getState().logs).toHaveLength(0);
+    });
+
+    it('enforces ring buffer cap of 500', () => {
+      useRuntimeStore.setState({ pipelineId: 'test-123' });
+
+      // Add 510 log entries
+      for (let i = 0; i < 510; i++) {
+        const message: LogMessage = {
+          event: 'log',
+          pipelineId: 'test-123',
+          data: {
+            id: `log-${i}`,
+            timestamp: Date.now(),
+            level: 'debug',
+            source: 'pipeline',
+            message: `Log entry ${i}`,
+          },
+        };
+        getState().onLogEvent(message);
+      }
+
+      expect(getState().logs).toHaveLength(500);
+      // Should keep the most recent entries
+      expect(getState().logs[0].id).toBe('log-10');
+      expect(getState().logs[499].id).toBe('log-509');
+    });
+  });
+
+  describe('clearLogs', () => {
+    it('clears all logs', () => {
+      useRuntimeStore.setState({
+        logs: [
+          { id: '1', timestamp: 0, level: 'info', source: 'pipeline', message: 'test' },
+          { id: '2', timestamp: 1, level: 'error', source: 'module1', message: 'error' },
+        ],
+      });
+
+      getState().clearLogs();
+
+      expect(getState().logs).toHaveLength(0);
     });
   });
 
