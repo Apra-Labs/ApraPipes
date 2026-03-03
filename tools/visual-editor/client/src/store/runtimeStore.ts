@@ -240,12 +240,12 @@ export const useRuntimeStore = create<RuntimeState & RuntimeActions>((set, get) 
           throw new Error(data.message || 'Failed to delete pipeline');
         }
 
+        // Preserve logs after delete — they only clear on createPipeline()
         set({
           pipelineId: null,
           status: 'IDLE',
           moduleMetrics: {},
           errors: [],
-          logs: [],
           startTime: null,
           isLoading: false,
         });
