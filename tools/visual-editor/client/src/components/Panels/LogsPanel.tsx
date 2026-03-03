@@ -177,14 +177,6 @@ export function LogsPanel() {
     }
   }, []);
 
-  // Copy visible logs to clipboard
-  const handleCopy = useCallback(() => {
-    const text = filtered
-      .map((e) => `${formatTimestamp(e.timestamp)} [${e.level.toUpperCase()}] ${e.source}: ${e.message}`)
-      .join('\n');
-    navigator.clipboard.writeText(text);
-  }, [filtered]);
-
   // Export logs as JSON
   const handleExport = useCallback(() => {
     const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });

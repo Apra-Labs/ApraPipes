@@ -219,6 +219,19 @@ export class MetricsStream {
       pipelineId,
     });
 
+    // Send accumulated logs so the client doesn't miss early events (e.g. "Pipeline created")
+    const manager = getPipelineManager();
+    const instance = manager.get(pipelineId);
+    if (instance && instance.logs.length > 0) {
+      for (const entry of instance.logs) {
+        this.send(socket, {
+          event: 'log',
+          pipelineId,
+          data: entry,
+        } as LogMessage);
+      }
+    }
+
     logger.info(`Client subscribed to pipeline: ${pipelineId}`);
   }
 

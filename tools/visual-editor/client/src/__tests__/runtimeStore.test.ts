@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useRuntimeStore } from '../store/runtimeStore';
-import type { HealthMessage, ErrorMessage, StatusMessage, LogMessage, LogEntry } from '../types/runtime';
+import type { HealthMessage, ErrorMessage, StatusMessage, LogMessage } from '../types/runtime';
 
 // Mock fetch
 const mockFetch = vi.fn();

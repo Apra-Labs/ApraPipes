@@ -356,7 +356,8 @@ export class PipelineManager extends EventEmitter {
       }
 
       // Generate mock health events for each module
-      for (const moduleId of Object.keys(instance.config.modules)) {
+      const moduleIds = Object.keys(instance.config.modules);
+      for (const moduleId of moduleIds) {
         const metrics: ModuleMetrics = {
           fps: 25 + Math.random() * 10, // 25-35 fps
           qlen: Math.floor(Math.random() * 10), // 0-9 queue length
@@ -376,9 +377,11 @@ export class PipelineManager extends EventEmitter {
         this.emit('health', { pipelineId: instance.id, ...healthEvent });
       }
 
+      // Emit a debug-level health tick log
+      this.addLog(instance, 'debug', 'pipeline', `Health tick: ${moduleIds.length} modules reporting`);
+
       // Occasionally emit a mock error (1% chance)
       if (Math.random() < 0.01) {
-        const moduleIds = Object.keys(instance.config.modules);
         if (moduleIds.length > 0) {
           const randomModule = moduleIds[Math.floor(Math.random() * moduleIds.length)];
           const errorEvent: ErrorEvent = {

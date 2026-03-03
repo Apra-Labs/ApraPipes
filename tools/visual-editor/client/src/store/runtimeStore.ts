@@ -148,6 +148,7 @@ export const useRuntimeStore = create<RuntimeState & RuntimeActions>((set, get) 
           status: 'IDLE',
           moduleMetrics,
           errors: [],
+          logs: [],
           isLoading: false,
         });
 
