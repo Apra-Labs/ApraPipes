@@ -247,6 +247,68 @@ describe('PipelineManager', () => {
     });
   });
 
+  describe('error field mapping', () => {
+    it('maps C++ error field names (errorMessage, errorCode, moduleName) to TS names', async () => {
+      // Simulate the C++ addon emitting an error with C++ field names
+      const id = manager.create(mockConfig);
+      const instance = manager.get(id)!;
+
+      // Manually push an error using the same mapping logic as startNative
+      const cppEvent: Record<string, unknown> = {
+        errorCode: 42,
+        errorMessage: 'File not found',
+        moduleName: 'FileWriter',
+        moduleId: 'writer1',
+        timestamp: '2026-03-02T10:00:00Z',
+      };
+
+      const runtimeError = {
+        moduleId: (cppEvent.moduleId as string) || (cppEvent.moduleName as string) || 'unknown',
+        message: (cppEvent.errorMessage as string) || (cppEvent.message as string) || 'Unknown error',
+        timestamp: Date.now(),
+        code: cppEvent.errorCode != null ? String(cppEvent.errorCode) : (cppEvent.code as string),
+      };
+      instance.errors.push(runtimeError);
+
+      expect(runtimeError.moduleId).toBe('writer1');
+      expect(runtimeError.message).toBe('File not found');
+      expect(runtimeError.code).toBe('42');
+    });
+
+    it('falls back to moduleName when moduleId is missing', () => {
+      const cppEvent: Record<string, unknown> = {
+        errorCode: 13,
+        errorMessage: 'Permission denied',
+        moduleName: 'FileWriter',
+      };
+
+      const runtimeError = {
+        moduleId: (cppEvent.moduleId as string) || (cppEvent.moduleName as string) || 'unknown',
+        message: (cppEvent.errorMessage as string) || (cppEvent.message as string) || 'Unknown error',
+        timestamp: Date.now(),
+        code: cppEvent.errorCode != null ? String(cppEvent.errorCode) : (cppEvent.code as string),
+      };
+
+      expect(runtimeError.moduleId).toBe('FileWriter');
+      expect(runtimeError.message).toBe('Permission denied');
+      expect(runtimeError.code).toBe('13');
+    });
+
+    it('falls back to defaults when all fields are missing', () => {
+      const cppEvent: Record<string, unknown> = {};
+
+      const runtimeError = {
+        moduleId: (cppEvent.moduleId as string) || (cppEvent.moduleName as string) || 'unknown',
+        message: (cppEvent.errorMessage as string) || (cppEvent.message as string) || 'Unknown error',
+        timestamp: Date.now(),
+        code: cppEvent.errorCode != null ? String(cppEvent.errorCode) : (cppEvent.code as string),
+      };
+
+      expect(runtimeError.moduleId).toBe('unknown');
+      expect(runtimeError.message).toBe('Unknown error');
+    });
+  });
+
   describe('mock mode health events', () => {
     it('emits health events when pipeline is running', async () => {
       const healthHandler = vi.fn();

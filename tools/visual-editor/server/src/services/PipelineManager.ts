@@ -415,15 +415,17 @@ export class PipelineManager extends EventEmitter {
     });
 
     pipeline.on('error', (event: unknown) => {
-      const errorEvent = event as ErrorEvent;
-      instance.errors.push({
-        moduleId: errorEvent.moduleId,
-        message: errorEvent.message,
+      // Map C++ field names (errorMessage, errorCode, moduleName) to TS names (message, code, moduleId)
+      const raw = event as Record<string, unknown>;
+      const runtimeError = {
+        moduleId: (raw.moduleId as string) || (raw.moduleName as string) || 'unknown',
+        message: (raw.errorMessage as string) || (raw.message as string) || 'Unknown error',
         timestamp: Date.now(),
-        code: errorEvent.code,
-      });
+        code: raw.errorCode != null ? String(raw.errorCode) : (raw.code as string),
+      };
+      instance.errors.push(runtimeError);
 
-      this.emit('error', { pipelineId: instance.id, ...errorEvent });
+      this.emit('error', { pipelineId: instance.id, ...runtimeError });
     });
 
     // Initialize and run the pipeline
