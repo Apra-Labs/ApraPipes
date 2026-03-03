@@ -79,20 +79,28 @@ test.describe('Log entry content and filtering', () => {
     }
   });
 
-  test('text search shows filter count when active', async ({ page }) => {
+  test('text search shows "N of M" filter count when results are narrowed', async ({ page }) => {
     await openLogsAndRun(page);
 
+    // Get total log count before filtering
+    const totalRows = await page.locator('.font-mono.text-xs.border-b').count();
+
+    // Search for "created" — should match only the "Pipeline created" log, not all
     const searchInput = page.locator('input[placeholder="Search logs..."]');
-    await searchInput.fill('pipeline');
+    await searchInput.fill('created');
     await page.waitForTimeout(300);
 
-    // The "N of M" text should be visible when filtering reduces the count
-    const filterCount = page.locator('text=/\\d+ of \\d+/');
-    // It may or may not appear depending on whether all logs match
-    // If all logs match "pipeline", no filter count is shown
-    const countVisible = await filterCount.isVisible().catch(() => false);
-    // This test just validates no crash — the filter itself works
-    expect(true).toBe(true);
+    const filteredRows = await page.locator('.font-mono.text-xs.border-b').count();
+
+    if (filteredRows < totalRows) {
+      // "N of M" text should be visible when filtering reduces the count
+      const filterCount = page.locator('span.text-gray-500', { hasText: /\d+ of \d+/ });
+      await expect(filterCount).toBeVisible();
+      const text = await filterCount.textContent();
+      expect(text).toMatch(new RegExp(`${filteredRows} of ${totalRows}`));
+    }
+    // If all logs happen to match, filter count won't appear — that's valid
+    expect(filteredRows).toBeGreaterThanOrEqual(1);
   });
 
   test('clear button removes all logs', async ({ page }) => {
