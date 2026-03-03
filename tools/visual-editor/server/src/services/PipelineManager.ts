@@ -493,6 +493,7 @@ export class PipelineManager extends EventEmitter {
     // Initialize and run the pipeline
     await pipeline.init();
     await pipeline.run({ pauseSupport: true });
+    pipeline.play();  // Resume from initial pause — run_all_threaded_withpause starts paused
   }
 
   /**
