@@ -23,3 +23,12 @@ aprapipes-sdk-*/
 BuildLogs_*/
 cuda-install-*/
 bin/
+
+# Playwright
+tools/visual-editor/playwright-report/
+tools/visual-editor/test-results/
+
+# PMO control files
+CLAUDE.md
+PLAN.md
+progress.json
