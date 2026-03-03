@@ -71,9 +71,12 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
     return selectedPin?.nodeId === nodeId && selectedPin?.pinName === pinName && selectedPin?.pinType === pinType;
   };
 
-  // Get runtime metrics from store
+  // Get runtime metrics and errors from store
   const runtimeStatus = useRuntimeStore((state) => state.status);
   const runtimeMetrics = useRuntimeStore((state) => state.moduleMetrics[data.label] || null);
+  const runtimeErrorCount = useRuntimeStore(
+    (state) => state.errors.filter((e) => e.moduleId === data.label).length
+  );
 
   // Determine effective status (use runtime status if running/completed, else data status)
   const isRunning = runtimeStatus === 'RUNNING';
@@ -83,10 +86,12 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
 
   const hasErrors = (data.validationErrors ?? 0) > 0;
   const hasWarnings = (data.validationWarnings ?? 0) > 0;
+  const hasRuntimeErrors = runtimeErrorCount > 0;
 
   // Determine border color based on status and validation
   const getBorderClass = () => {
     if (hasErrors) return 'border-red-500 shadow-red-100';
+    if (hasRuntimeErrors) return 'border-purple-500 shadow-purple-100';
     if (hasWarnings) return 'border-yellow-500 shadow-yellow-100';
     if (effectiveStatus === 'running') return 'border-green-500 shadow-green-200';
     if (effectiveStatus === 'completed') return 'border-green-600 shadow-green-100';
@@ -100,7 +105,7 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
         bg-white rounded-lg shadow-md border-2 min-w-[180px]
         ${getBorderClass()}
         ${selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
-        ${effectiveStatus === 'running' || hasErrors ? 'shadow-lg' : ''}
+        ${effectiveStatus === 'running' || hasErrors || hasRuntimeErrors ? 'shadow-lg' : ''}
       `}
     >
       {/* Header - compact design, category shown by color only */}
@@ -129,7 +134,15 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
                 {data.validationWarnings}
               </span>
             )}
-            {effectiveStatus === 'error' && !hasErrors && (
+            {runtimeErrorCount > 0 && (
+              <span
+                className="inline-flex items-center justify-center w-5 h-5 text-xs bg-purple-600 text-white rounded-full"
+                title={`${runtimeErrorCount} runtime error(s)`}
+              >
+                {runtimeErrorCount}
+              </span>
+            )}
+            {effectiveStatus === 'error' && !hasErrors && runtimeErrorCount === 0 && (
               <span className="text-xs">!!</span>
             )}
           </div>
