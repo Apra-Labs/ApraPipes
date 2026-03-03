@@ -1,0 +1,21 @@
+{
+  "modules": {
+    "fake_source": {
+      "type": "NonExistentModuleType",
+      "properties": {
+        "width": 640
+      }
+    },
+    "good_module": {
+      "type": "TestSignalGenerator",
+      "properties": {
+        "width": 640,
+        "height": 480
+      }
+    }
+  },
+  "connections": [
+    { "from": "fake_source", "to": "good_module" },
+    { "from": "good_module", "to": "missing_target" }
+  ]
+}
