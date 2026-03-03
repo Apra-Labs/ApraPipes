@@ -10,6 +10,7 @@ import type {
   HealthMessage,
   ErrorMessage,
   StatusMessage,
+  LogMessage,
   ConnectionState,
 } from '../types/runtime';
 
@@ -29,6 +30,7 @@ export interface WebSocketHandlers {
   onHealth?: (message: HealthMessage) => void;
   onError?: (message: ErrorMessage) => void;
   onStatus?: (message: StatusMessage) => void;
+  onLog?: (message: LogMessage) => void;
   onConnectionStateChange?: (state: ConnectionState) => void;
 }
 
@@ -190,6 +192,9 @@ export class WebSocketClient {
           break;
         case 'status':
           this.handlers.onStatus?.(message as StatusMessage);
+          break;
+        case 'log':
+          this.handlers.onLog?.(message as LogMessage);
           break;
         case 'subscribed':
         case 'unsubscribed':

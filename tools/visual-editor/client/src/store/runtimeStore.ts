@@ -105,6 +105,7 @@ export const useRuntimeStore = create<RuntimeState & RuntimeActions>((set, get) 
     onHealth: (message) => get().onHealthEvent(message),
     onError: (message) => get().onErrorEvent(message),
     onStatus: (message) => get().onStatusEvent(message),
+    onLog: (message) => get().onLogEvent(message),
     onConnectionStateChange: (state) => get().onConnectionStateChange(state),
   });
 
