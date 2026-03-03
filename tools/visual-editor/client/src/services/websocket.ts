@@ -14,7 +14,8 @@ import type {
   ConnectionState,
 } from '../types/runtime';
 
-const WS_URL = 'ws://localhost:3000/ws';
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const WS_URL = `${wsProtocol}//${window.location.host}/ws`;
 
 // Reconnect settings
 const INITIAL_RECONNECT_DELAY = 1000; // 1 second
