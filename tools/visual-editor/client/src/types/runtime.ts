@@ -5,7 +5,7 @@
 /**
  * Pipeline execution status
  */
-export type PipelineStatus = 'IDLE' | 'CREATING' | 'RUNNING' | 'STOPPING' | 'STOPPED' | 'ERROR';
+export type PipelineStatus = 'IDLE' | 'CREATING' | 'RUNNING' | 'STOPPING' | 'STOPPED' | 'COMPLETED' | 'ERROR';
 
 /**
  * Module runtime metrics from health events

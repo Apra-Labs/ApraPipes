@@ -20,7 +20,7 @@ import type {
   StatusMessage,
 } from '../types/runtime';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '';
 
 /**
  * Runtime store state
@@ -325,7 +325,7 @@ export const useRuntimeStore = create<RuntimeState & RuntimeActions>((set, get) 
 
     getDuration: () => {
       const { startTime, status } = get();
-      if (!startTime || status !== 'RUNNING') {
+      if (!startTime || (status !== 'RUNNING' && status !== 'COMPLETED')) {
         return null;
       }
       return Date.now() - startTime;
