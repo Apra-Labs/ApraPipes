@@ -120,14 +120,14 @@ export async function getProblems(page: Page): Promise<string[]> {
  * Click the Run button in the toolbar.
  */
 export async function clickRun(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Run' }).click();
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
 }
 
 /**
  * Click the Stop button in the toolbar.
  */
 export async function clickStop(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Stop' }).click();
+  await page.getByRole('button', { name: 'Stop', exact: true }).click();
 }
 
 /**
