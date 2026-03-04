@@ -40,22 +40,17 @@
     {
       "name": "whisper",
       "default-features": false,
-      "features": []
-    },
-    {
-      "name": "whisper",
-      "default-features": false,
       "features": [
         "cuda"
-      ],
-      "platform": "(windows & x64) | (linux & x64) | (linux & arm64)",
-      "$reason": "CUDA acceleration for whisper — only on platforms with CUDA support"
+      ]
     },
     {
       "name": "opencv4",
       "default-features": false,
       "features": [
         "contrib",
+        "cuda",
+        "cudnn",
         "dnn",
         "highgui",
         "jpeg",
@@ -64,16 +59,6 @@
         "tiff",
         "webp"
       ]
-    },
-    {
-      "name": "opencv4",
-      "default-features": false,
-      "features": [
-        "cuda",
-        "cudnn"
-      ],
-      "platform": "(windows & x64) | (linux & x64) | (linux & arm64)",
-      "$reason": "CUDA/cuDNN acceleration for OpenCV — only on platforms with CUDA support"
     },
     {
       "name": "freeglut",
