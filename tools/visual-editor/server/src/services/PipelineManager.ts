@@ -12,6 +12,8 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { createLogger } from '../utils/logger.js';
+import { getSchemaLoader } from './SchemaLoader.js';
+import type { ModuleSchema } from './SchemaLoader.js';
 import type {
   PipelineInstance,
   PipelineStatus,
@@ -114,6 +116,7 @@ export class PipelineManager extends EventEmitter {
   private pipelines: Map<string, PipelineInstance> = new Map();
   private nativeAddon: NativeAddon | null;
   private useMockMode: boolean;
+  private moduleSchemas: Record<string, ModuleSchema> | null = null;
 
   constructor(options: PipelineManagerOptions = {}) {
     super();
@@ -137,6 +140,21 @@ export class PipelineManager extends EventEmitter {
       } else {
         logger.info('PipelineManager initialized with native addon');
       }
+    }
+
+    // Load module schemas asynchronously for type coercion
+    this.loadSchemas();
+  }
+
+  /**
+   * Load module schemas for property type coercion
+   */
+  private async loadSchemas(): Promise<void> {
+    try {
+      this.moduleSchemas = await getSchemaLoader().getSchema();
+      logger.info(`Loaded schemas for ${Object.keys(this.moduleSchemas).length} module types`);
+    } catch (error) {
+      logger.warn('Failed to load module schemas for type coercion:', error);
     }
   }
 
@@ -497,7 +515,43 @@ export class PipelineManager extends EventEmitter {
   }
 
   /**
+   * Coerce a property value to the type declared in the schema.
+   * The C++ PipelineValidator rejects type mismatches (e.g. string "320" for an int prop).
+   */
+  private coercePropertyValue(value: unknown, schemaType: string): unknown {
+    if (value === undefined || value === null) return value;
+
+    switch (schemaType) {
+      case 'int': {
+        if (typeof value === 'number') return Math.round(value);
+        if (typeof value === 'string') {
+          const parsed = parseInt(value, 10);
+          return isNaN(parsed) ? value : parsed;
+        }
+        return value;
+      }
+      case 'float': {
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+          const parsed = parseFloat(value);
+          return isNaN(parsed) ? value : parsed;
+        }
+        return value;
+      }
+      case 'bool': {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') return value === 'true';
+        return value;
+      }
+      default:
+        // string, enum, json — pass as-is
+        return value;
+    }
+  }
+
+  /**
    * Convert PipelineConfig to the format expected by aprapipes.node
+   * Coerces property value types based on module schema to prevent E201 validation errors.
    */
   private convertToPipelineConfig(config: PipelineConfig): string {
     const pipelineObj = {
@@ -509,11 +563,26 @@ export class PipelineManager extends EventEmitter {
     };
 
     for (const [moduleId, moduleConfig] of Object.entries(config.modules)) {
+      let props: Record<string, unknown> | undefined;
+
+      if (moduleConfig.properties && Object.keys(moduleConfig.properties).length > 0) {
+        props = { ...moduleConfig.properties };
+
+        // Coerce types using schema if available
+        const schema = this.moduleSchemas?.[moduleConfig.type];
+        if (schema) {
+          for (const [key, value] of Object.entries(props)) {
+            const propSchema = schema.properties[key];
+            if (propSchema) {
+              props[key] = this.coercePropertyValue(value, propSchema.type);
+            }
+          }
+        }
+      }
+
       pipelineObj.modules[moduleId] = {
         type: moduleConfig.type,
-        ...(moduleConfig.properties && Object.keys(moduleConfig.properties).length > 0
-          ? { props: moduleConfig.properties }
-          : {}),
+        ...(props ? { props } : {}),
       };
     }
 
