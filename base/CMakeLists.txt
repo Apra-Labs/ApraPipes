@@ -1035,11 +1035,26 @@ install(TARGETS aprapipes_cli
 # ============================================================
 set(SCHEMA_DIR ${CMAKE_BINARY_DIR}/schema)
 
+# Create a cmake script to capture CLI output to file (portable, no shell redirection)
+file(WRITE ${CMAKE_BINARY_DIR}/generate_schema.cmake
+"execute_process(
+    COMMAND \${CLI_EXE} describe --all --json
+    OUTPUT_FILE \${OUTPUT_FILE}
+    RESULT_VARIABLE rc
+)
+if(NOT rc EQUAL 0)
+    message(FATAL_ERROR \"Schema generation failed with exit code \${rc}\")
+endif()
+")
+
 # Generate combined schema (modules + frameTypes) using aprapipes_cli
 add_custom_command(
     OUTPUT ${SCHEMA_DIR}/schema.json
     COMMAND ${CMAKE_COMMAND} -E make_directory ${SCHEMA_DIR}
-    COMMAND aprapipes_cli describe --all --json > ${SCHEMA_DIR}/schema.json
+    COMMAND ${CMAKE_COMMAND}
+        -DCLI_EXE=$<TARGET_FILE:aprapipes_cli>
+        -DOUTPUT_FILE=${SCHEMA_DIR}/schema.json
+        -P ${CMAKE_BINARY_DIR}/generate_schema.cmake
     DEPENDS aprapipes_cli
     COMMENT "Generating ApraPipes schema from C++ metadata (aprapipes_cli describe --all --json)"
     VERBATIM
