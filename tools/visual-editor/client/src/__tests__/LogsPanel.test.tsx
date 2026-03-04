@@ -138,7 +138,7 @@ describe('LogsPanel', () => {
       useRuntimeStore.setState({
         logs: makeLogs([
           { message: 'Pipeline created with 3 modules' },
-          { message: 'fps=30.2 qlen=2' },
+          { message: 'fps=30.2 qlen=2', source: 'health' },
           { message: 'Pipeline completed' },
         ]),
       });
