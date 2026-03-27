@@ -113,6 +113,11 @@ public:
     }
   }
 
+  if (oldestDay.empty())
+  {
+    return {};
+  }
+
   boost::filesystem::path oldestHour;
     for (const auto& hourEntry : boost::filesystem::directory_iterator(oldestDay))
     {
@@ -167,6 +172,19 @@ public:
       for (const auto &camFolder :
            boost::filesystem::directory_iterator(mProps.pathToWatch))
       {
+        if (boost::filesystem::is_empty(camFolder))
+        {
+        LOG_INFO << "Camera folder is empty, deleting: " << camFolder.path().string();
+          try
+          {
+          boost::filesystem::remove_all(camFolder);
+          }
+        catch (const std::exception& e)
+          {
+            LOG_ERROR << "Could not delete empty camera folder: " << e.what();
+          }
+          continue; // skip to next camFolder
+        }
         
         boost::filesystem::path oldHrDir = getOldestHourDirByName(camFolder);
 
