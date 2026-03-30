@@ -456,7 +456,19 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 
 	if (!queryBeforeCacheStart)
 	{
-		bool isSkipFileInCache = getFileFromCache(skipTS, direction, skipVideoFile);
+		bool isSkipFileInCache=false;
+		try
+		{
+		 	isSkipFileInCache= getFileFromCache(skipTS, direction, skipVideoFile);
+		}
+		catch(Mp4_Exception& exception)
+		{
+			if (exception.getCode() == MP4_OCOF_END)
+			{
+				auto msg = "Reached End OF cache";
+				isSkipFileInCache=false;
+			}
+		}
 		if (isSkipFileInCache)
 		{
 			bool isTsInFile = isTimeStampInFile(skipVideoFile, skipTS);
@@ -502,7 +514,20 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 	}
 
 	// check in updated cache data
-	bool isSkipFileInCache = getFileFromCache(skipTS, direction, skipVideoFile);
+	bool isSkipFileInCache=false;
+	try
+	{
+		isSkipFileInCache = getFileFromCache(skipTS, direction, skipVideoFile);
+	}
+	catch (Mp4_Exception& exception)
+	{
+		isSkipFileInCache=false;
+		if (exception.getCode() == MP4_OCOF_END)
+		{
+			auto msg = "Reached End OF cache";
+			throw Mp4Exception(MP4_OCOF_END, msg);
+		}
+	}
 	if (!isSkipFileInCache)
 	{
 		/*case: in case of fwd parse, cache might include last file on disk as relevant file,
@@ -564,6 +589,8 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 		if (exception.getCode() == MP4_OCOF_END)
 		{
 			fileName = "";
+			auto msg = "Reached End OF cache";
+			throw Mp4Exception(MP4_OCOF_END, msg);
 		}
 		return false;
 	}

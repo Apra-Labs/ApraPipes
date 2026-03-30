@@ -174,6 +174,8 @@ public:
 			cof->clearCache();
 			if (tempVideoPath == mState.mVideoPath)
 			{
+				// When only props are being updated (same video path), preserve playbackSpeed and fps
+				// from the incoming props (which should already have the correct values from setPlayback)
 				updateMstate(props, tempVideoPath);
 				return;
 			}
@@ -289,13 +291,57 @@ public:
 		return mState.mSerFormatVersion;
 	}
 
-	void setPlayback(float _speed, bool _direction)
+		void setPlayback(float _speed, bool _direction)
 	{
-		if (_speed != mState.speed)
+		// Update both speed variables for consistency
+		bool speedChanged = (_speed != playbackSpeed);
+		if (speedChanged)
 		{
+			playbackSpeed = _speed;
 			mState.speed = _speed;
+			mProps.playbackSpeed = _speed;
+
+			// Only update FPS if video is open and forceFPS is not enabled
+			if (mState.demux && !mProps.forceFPS)
+			{
+				// For speeds < 8x: Adjust FPS without frame dropping (slow-mo, 1x, 2x, 4x)
+				// All frames are read, but delivered at different rate
+				if (playbackSpeed < 4)
+				{
+					mProps.fps = mFPS * playbackSpeed;
+					LOG_INFO << "Playback speed changed to <" << playbackSpeed << "x>, FPS updated to <" << mProps.fps << ">";
+					// Update Module's FPS directly without triggering full setProps
+					// This only updates FPS in the Module, avoiding video reinitialization
+					setMp4ReaderProps(mProps);
+				}
+				// For 4x, 8x, 16x, 32x: Use I-frame skipping mode
+				// GOP-based FPS adjustment + randomSeek in produceFrames
+				else if (playbackSpeed == 4  || playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+				{
+					auto gop = getGop();
+					if (gop)
+					{
+						mProps.fps = (mFPS * playbackSpeed) / gop;
+						LOG_INFO << "Playback speed changed to <" << playbackSpeed << "x> with GOP <" << gop << ">, FPS updated to <" << mProps.fps << ">";
+					}
+					else
+					{
+						mProps.fps = mFPS * playbackSpeed;
+						LOG_WARNING << "GOP is 0, using fallback FPS calculation: <" << mProps.fps << ">";
+					}
+					setMp4ReaderProps(mProps);
+				}
+				else
+				{
+					// Unsupported speed
+					LOG_WARNING << "Playback speed <" << playbackSpeed << "x> not explicitly supported. Using direct FPS multiplication.";
+					mProps.fps = mFPS * playbackSpeed;
+					setMp4ReaderProps(mProps);
+				}
+			}
 		}
-		// only if direction changes
+
+		// Handle direction changes
 		if (mState.direction != _direction)
 		{
 			mState.direction = _direction;
@@ -347,7 +393,7 @@ public:
 			setMetadata();
 		}
 	}
-
+	
 	bool getVideoRangeFromCache(std::string& videoPath, uint64_t& start_ts, uint64_t& end_ts)
 	{
 		return cof->fetchFromCache(videoPath, start_ts, end_ts);
@@ -513,7 +559,15 @@ public:
 				LOG_TRACE << "REOPEN THE FILE < " << mState.mVideoPath << ">";
 				openVideoSetPointer(mState.mVideoPath);
 				auto seekTS = mState.direction ? mState.frameTSInMsecs + 1 : mState.frameTSInMsecs - 1;
-				auto ret = randomSeekInternal(seekTS); // also resets end
+				bool ret=false;
+				try
+				{
+					ret = randomSeekInternal(seekTS); // also resets end
+				}
+				catch(Mp4_Exception& ex)
+				{
+					ret=false;
+				}
 				if (!ret)
 				{
 					auto msg = "Unexpected issue occured while resuming playback after reloading the file <"
@@ -549,6 +603,7 @@ public:
 
 		LOG_INFO << "opening video <" << filePath << ">";
 		ret = mp4_demux_open(filePath.c_str(), &mState.demux);
+		LOG_INFO << "mp4_demux_open ret <" << ret << "> demux <" << mState.demux << ">";
 		if (ret < 0)
 		{
 			// TODO: Behaviour yet to be decided in case a file is deleted while it is cached, generating a hole in the cache.
@@ -614,14 +669,16 @@ public:
 				// todo: Implement a way for mp4reader to update FPS when opening a new video in parseFS enabled mode. Must not set parseFS disabled in a loop.
 				auto propsFPS = mProps.fps;
 				mProps.fps = mFPS;
+				LOG_INFO << "Calling getGop()";
 				auto gop = getGop();
+				LOG_INFO << "getGop() returned <" << gop << ">";
 				mProps.fps = mFPS * playbackSpeed;
 				if (mProps.forceFPS)
 				{
 					mProps.fps = propsFPS;
 					mFPS = propsFPS;
 				}
-				if (playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+				if (playbackSpeed ==  4 || playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
 				{
 					if (gop)
 					{
@@ -870,12 +927,23 @@ public:
 				throw; // Rethrow if you want to propagate the exception further
 			}
 		}
-		bool ret;
+		bool ret=false;
 		try
-		{
+		{		 
 			LOG_ERROR << "Handling Random Seek Command";
 			ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
 		}
+		catch (Mp4_Exception& exception)
+		{
+			ret=false;
+		
+			if (exception.getCode() == MP4_OCOF_END)
+			{
+				auto msg = "Reached End OF cache";
+				throw Mp4Exception(MP4_OCOF_END, msg);
+			}
+		}
+
 		catch (const std::exception &e)
 		{
 			LOG_ERROR << "Exception caught while getting random seek file: " << e.what();
@@ -989,6 +1057,14 @@ public:
 				}
 				return false;
 			}
+			if (ex.getCode() == MP4_OCOF_END)
+			{
+				LOG_INFO<<"exception caught in randomSeekInternal";
+				auto msg="seek failed due to EOC";
+				APErrorObject error(345, msg);
+				propagateError(error);
+				
+			}
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_SEEK, ex.getCode(), ex.getError(), ex.getOpenFileErrorCode(), skipTS);
 			return false;
 		}
@@ -998,6 +1074,11 @@ public:
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_SEEK, MP4_UNEXPECTED_STATE, msg, 0, skipTS);
 			return false;
 		}
+		
+		auto msg="seek successfull";
+		APErrorObject error(200, msg);
+		propagateError(error);
+		LOG_INFO<<"seek successed";
 		return true;
 	}
 
@@ -1785,7 +1866,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		isMp4SeekFrame = false;
 		setMetadata();
 	}
-	if((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32))
+	if((playbackSpeed == 4 || playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32))
 	{
 		if(mDirection)
 		{
@@ -1824,14 +1905,18 @@ Mp4ReaderSource::~Mp4ReaderSource() {}
 
 bool Mp4ReaderSource::init()
 {
+	LOG_INFO << "Mp4ReaderSource::init() started";
 	if (!Module::init())
 	{
 		APErrorObject error(0, "MP4Reader init error");
     	executeErrorCallback(error);
 		return false;
 	}
+	LOG_INFO << "Module::init() finished";
 	auto outMetadata = getFirstOutputMetadata();
+	LOG_INFO << "outMetadata <" << outMetadata.get() << ">";
 	auto  mFrameType = outMetadata->getFrameType();
+	LOG_INFO << "mFrameType <" << mFrameType << ">";
 	if (mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 	{
 		mDetail.reset(new Mp4ReaderDetailJpeg(
@@ -1880,7 +1965,15 @@ bool Mp4ReaderSource::init()
 	mDetail->h264ImagePinId = h264ImagePinId;
 	mDetail->metadataFramePinId = metadataFramePinId;
 	mDetail->controlModule = controlModule;
-	return mDetail->Init();
+
+	bool initResult = mDetail->Init();
+	if (initResult && props.playbackSpeed != 1.0f)
+	{
+		LOG_INFO << "Applying initial playback speed from props: " << props.playbackSpeed << "x";
+		mDetail->setPlayback(props.playbackSpeed, props.direction);
+	}
+
+	return initResult;
 }
 
 void Mp4ReaderSource::setImageMetadata(std::string& pinId, framemetadata_sp& metadata)
@@ -2006,15 +2099,28 @@ bool Mp4ReaderSource::validateOutputPins()
 
 Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 {
+	// Expose the latest effective props from the detail object (includes playbackSpeed / fps updates).
 	return mDetail->mProps;
 }
 
 bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
-	bool direction = getPlayDirection();
-	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.parseFS, mDetail->mProps.reInitInterval, direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
-	bool ret = Module::handlePropsChange(frame, props);
-	mDetail->setProps(props);
+	// Start from the latest internal props (which already include any playbackSpeed/FPS changes)
+	Mp4ReaderSourceProps newProps = mDetail->mProps;
+	// Only override direction from the current play state
+	newProps.direction = getPlayDirection();
+	
+	// Ensure playbackSpeed and fps are preserved from mDetail->mProps
+	// (they should already be there, but be explicit to avoid any issues)
+	newProps.playbackSpeed = mDetail->mProps.playbackSpeed;
+	newProps.fps = mDetail->mProps.fps;
+
+	// Let the base Module apply these props (timers, logging, etc.)
+	bool ret = Module::handlePropsChange(frame, newProps);
+
+	// Keep both the Module-level props and internal detail props in sync
+	props = newProps;
+	mDetail->setProps(newProps);
 	return ret;
 }
 
@@ -2029,6 +2135,12 @@ bool Mp4ReaderSource::changePlayback(float speed, bool direction)
 	return queuePlayPauseCommand(ppc);
 }
 
+bool Mp4ReaderSource::changePlaybackSpeed(float speed, bool direction)
+{
+	Mp4ReaderPlaybackSpeedCommand cmd(speed, direction);
+	return queueCommand(cmd, true);
+}
+
 bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 {
 	if (type == Command::CommandType::Seek)
@@ -2036,6 +2148,13 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
 		return mDetail->randomSeek(seekCmd.seekStartTS, seekCmd.forceReopen);
+	}
+	else if (type == Command::CommandType::Mp4ReaderPlaybackSpeed)
+	{
+		Mp4ReaderPlaybackSpeedCommand speedCmd;
+		getCommand(speedCmd, frame);
+		mDetail->setPlayback(speedCmd.playbackSpeed, speedCmd.direction);
+		return true;
 	}
 	else
 	{

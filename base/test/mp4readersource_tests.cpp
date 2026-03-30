@@ -13,6 +13,8 @@
 #include "ExternalSinkModule.h"
 #include "test_utils.h"
 #include "Mp4ErrorFrame.h"
+#include "ImageDecoderCV.h"
+#include "ImageViewerModule.h"
 
 BOOST_AUTO_TEST_SUITE(mp4readersource_tests)
 
@@ -571,6 +573,244 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 	mp4Reader->step();
 	frames = sink->pop();
 	BOOST_TEST((frames.find(pinId) != frames.end()));
+}
+
+
+BOOST_AUTO_TEST_CASE(playrate_1x_all_frames_delivered)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+
+	double baseFPS = s.mp4Reader->getOpenVideoFPS();
+	int totalFrames = s.mp4Reader->getOpenVideoFrameCount();
+
+	// At 1x, all frames should be delivered, FPS = baseFPS
+	auto props = s.mp4Reader->getProps();
+	BOOST_TEST(props.fps == baseFPS, boost::test_tools::tolerance(0.01));
+
+	// Read 10 consecutive frames and verify timestamps are monotonically increasing
+	uint64_t prevTS = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		s.mp4Reader->step();
+		auto frames = s.sink->pop();
+		if (frames.empty()) continue;
+		auto frame = frames.begin()->second;
+		BOOST_TEST(frame->timestamp > prevTS);
+		prevTS = frame->timestamp;
+	}
+}
+
+BOOST_AUTO_TEST_CASE(playrate_2x_fps_doubled)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+
+	double baseFPS = s.mp4Reader->getOpenVideoFPS();
+
+	s.mp4Reader->changePlaybackSpeed(2.0f, true);
+	s.mp4Reader->step(); // process command
+	s.mp4Reader->step(); // process props change
+
+	auto props = s.mp4Reader->getProps();
+	BOOST_TEST(props.playbackSpeed == 2.0f);
+	// At 2x: FPS should be baseFPS * 2, all frames still delivered
+	BOOST_TEST(props.fps == baseFPS * 2.0f, boost::test_tools::tolerance(0.01));
+
+	// Frames should still be monotonically increasing (no frame skipping at 2x)
+	uint64_t prevTS = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		s.mp4Reader->step();
+		auto frames = s.sink->pop();
+		if (frames.empty()) continue;
+		auto frame = frames.begin()->second;
+		BOOST_TEST(frame->timestamp > prevTS);
+		prevTS = frame->timestamp;
+	}
+}
+
+BOOST_AUTO_TEST_CASE(playrate_4x_iframe_skipping)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+
+	double baseFPS = s.mp4Reader->getOpenVideoFPS();
+
+	s.mp4Reader->changePlaybackSpeed(4.0f, true);
+	s.mp4Reader->step(); // process command
+	s.mp4Reader->step(); // process props change
+
+	auto props = s.mp4Reader->getProps();
+	BOOST_TEST(props.playbackSpeed == 4.0f);
+
+	// At 4x: I-frame skipping mode, FPS = (baseFPS * 4) / GOP
+	// Should NOT equal baseFPS * 4 (GOP division applies)
+	BOOST_TEST(props.fps != baseFPS * 4.0f);
+	// FPS should be less than baseFPS * 4 (GOP > 1)
+	BOOST_TEST(props.fps < baseFPS * 4.0f);
+
+	// At 4x, only I-frames are delivered, so timestamp gaps should be > 1 frame interval
+	double frameIntervalMs = 1000.0 / baseFPS;
+	uint64_t prevTS = 0;
+	int frameCount = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		s.mp4Reader->step();
+		auto frames = s.sink->pop();
+		if (frames.empty()) continue;
+		auto frame = frames.begin()->second;
+		if (prevTS > 0)
+		{
+			uint64_t gap = frame->timestamp - prevTS;
+			// Gap should be larger than a single frame interval (I-frame skipping)
+			BOOST_TEST(gap > static_cast<uint64_t>(frameIntervalMs));
+		}
+		prevTS = frame->timestamp;
+		frameCount++;
+	}
+	BOOST_TEST(frameCount > 0);
+}
+
+BOOST_AUTO_TEST_CASE(playrate_switch_1x_to_4x_and_back)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+
+	double baseFPS = s.mp4Reader->getOpenVideoFPS();
+
+	// Read a few frames at 1x
+	for (int i = 0; i < 5; i++)
+	{
+		s.mp4Reader->step();
+		s.sink->pop();
+	}
+
+	// Switch to 4x
+	s.mp4Reader->changePlaybackSpeed(4.0f, true);
+	s.mp4Reader->step();
+	s.mp4Reader->step();
+	auto props = s.mp4Reader->getProps();
+	BOOST_TEST(props.playbackSpeed == 4.0f);
+	BOOST_TEST(props.fps < baseFPS * 4.0f); // GOP division applied
+
+	// Read a few frames at 4x
+	for (int i = 0; i < 3; i++)
+	{
+		s.mp4Reader->step();
+		s.sink->pop();
+	}
+
+	// Switch back to 1x
+	s.mp4Reader->changePlaybackSpeed(1.0f, true);
+	s.mp4Reader->step();
+	s.mp4Reader->step();
+	props = s.mp4Reader->getProps();
+	BOOST_TEST(props.playbackSpeed == 1.0f);
+	BOOST_TEST(props.fps == baseFPS, boost::test_tools::tolerance(0.01));
+}
+
+BOOST_AUTO_TEST_CASE(playrate_8x_fps_gop_adjusted)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+
+	double baseFPS = s.mp4Reader->getOpenVideoFPS();
+
+	s.mp4Reader->changePlaybackSpeed(8.0f, true);
+	s.mp4Reader->step();
+	s.mp4Reader->step();
+
+	auto props = s.mp4Reader->getProps();
+	BOOST_TEST(props.playbackSpeed == 8.0f);
+	// At 8x: same I-frame skipping as 4x, GOP division applied
+	BOOST_TEST(props.fps < baseFPS * 8.0f);
+	BOOST_TEST(props.fps > 0.0f);
+}
+
+BOOST_AUTO_TEST_CASE(playrate_backward_1x)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+
+	// Read a few frames forward first to get away from the start
+	for (int i = 0; i < 20; i++)
+	{
+		s.mp4Reader->step();
+		s.sink->pop();
+	}
+
+	// Switch to backward playback at 1x
+	s.mp4Reader->changePlayback(1.0f, false);
+	s.mp4Reader->step(); // process command
+
+	// Read frames and verify timestamps are monotonically decreasing
+	uint64_t prevTS = UINT64_MAX;
+	int validFrames = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		s.mp4Reader->step();
+		auto frames = s.sink->pop();
+		if (frames.empty()) continue;
+		auto frame = frames.begin()->second;
+		if (prevTS != UINT64_MAX)
+		{
+			BOOST_TEST(frame->timestamp < prevTS);
+		}
+		prevTS = frame->timestamp;
+		validFrames++;
+	}
+	BOOST_TEST(validFrames > 0);
+}
+
+BOOST_AUTO_TEST_CASE(playrate_initial_speed_from_props)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	bool parseFS = false;
+
+	// Initialize with 2x speed in props
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.playbackSpeed = 2.0f;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	mp4Reader->setNext(sink);
+
+	BOOST_TEST(mp4Reader->init());
+	BOOST_TEST(sink->init());
+
+	double baseFPS = mp4Reader->getOpenVideoFPS();
+	auto props = mp4Reader->getProps();
+
+	// FPS should already reflect 2x speed from init
+	BOOST_TEST(props.playbackSpeed == 2.0f);
+	BOOST_TEST(props.fps == baseFPS * 2.0f, boost::test_tools::tolerance(0.01));
+
+	mp4Reader->term();
+	sink->term();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
