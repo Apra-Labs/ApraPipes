@@ -15,7 +15,7 @@
 
 class DTSCalcStrategy {
 public:
-  enum DTSCalcStrategyType { PASS_THROUGH = 0, FIXED_RATE };
+  enum DTSCalcStrategyType { PASS_THROUGH = 0, FIXED_RATE , CLIP_EXPORT };
 
   DTSCalcStrategy(DTSCalcStrategyType _type) { type = _type; }
   virtual int64_t getDTS(uint64_t &frameTS, uint64_t lastFrameTS,
@@ -57,6 +57,85 @@ public:
   }
 };
 
+class ClipExportStrategy : public DTSCalcStrategy {
+public:
+    // minHoleGapMs — absolute minimum gap in ms to be considered a recording hole
+    // e.g. 2000ms means only gaps > 2 seconds are treated as holes
+    // jitterToleranceMultiplier — gaps within N*idealDuration are smoothed as jitter
+    explicit ClipExportStrategy(int64_t maxGapMultiplier = 3,
+                                 int64_t minHoleGapMs = 2000,
+                                 int64_t jitterToleranceMultiplier = 5)
+        : DTSCalcStrategy(DTSCalcStrategy::DTSCalcStrategyType::CLIP_EXPORT)
+        , mMaxGapMultiplier(maxGapMultiplier)
+        , mMinHoleGapMs(minHoleGapMs)
+        , mJitterToleranceMultiplier(jitterToleranceMultiplier) {}
+
+    int64_t getDTS(uint64_t &frameTS, uint64_t lastFrameTS,
+                   uint16_t fps) override {
+        
+        int64_t idealDurationInMsecs   = static_cast<int64_t>(1000 / fps);
+        int64_t halfDurationInMsecs    = idealDurationInMsecs / 2;
+        int64_t diffInMsecs            = static_cast<int64_t>(frameTS) - 
+                                         static_cast<int64_t>(lastFrameTS);
+        // jitter band — gaps within this are smoothed but NOT treated as holes
+        int64_t jitterThresholdMs      = idealDurationInMsecs * mJitterToleranceMultiplier;
+
+        LOG_INFO << "ClipExportStrategy: frameTS=" << frameTS
+                 << " lastFrameTS=" << lastFrameTS
+                 << " diff=" << diffInMsecs
+                 << " idealDuration=" << idealDurationInMsecs
+                 << " jitterThreshold=" << jitterThresholdMs
+                 << " minHoleGap=" << mMinHoleGapMs;
+
+        // ── Case 1: duplicate timestamp ──────────────────────────────────────
+        if (!diffInMsecs) {
+            frameTS += halfDurationInMsecs;
+            return halfDurationInMsecs;
+        }
+
+        // ── Case 2: timestamp went backwards ─────────────────────────────────
+        if (diffInMsecs < 0) {
+            frameTS = lastFrameTS + halfDurationInMsecs;
+            return halfDurationInMsecs;
+        }
+
+        // ── Case 3: jitter band — slightly large but NOT a real hole ─────────
+        // e.g. 150ms gap at 25fps: real gap due to network, preserve it as-is
+        if (diffInMsecs <= jitterThresholdMs) {
+            LOG_TRACE << "ClipExportStrategy: jitter gap=" << diffInMsecs 
+                      << "ms, preserving real diff";
+            return diffInMsecs; // write real diff — don't compress jitter
+        }
+
+        // ── Case 4: real recording hole ───────────────────────────────────────
+        // BOTH conditions must be true:
+        //   a) gap exceeds jitter tolerance (not just network wobble)
+        //   b) gap exceeds absolute minimum hole size (e.g. 2 seconds)
+        // This prevents false positives on high-jitter streams
+        if (diffInMsecs > jitterThresholdMs && diffInMsecs >= mMinHoleGapMs) {
+            LOG_INFO << "ClipExportStrategy: recording hole detected."
+                     << " Gap=" << diffInMsecs << "ms"
+                     << " > minHoleGap=" << mMinHoleGapMs << "ms."
+                     << " Capping DTS to idealDuration=" << idealDurationInMsecs << "ms";
+            return idealDurationInMsecs; // skip the hole
+        }
+
+        // ── Case 5: grey zone — between jitter tolerance and minHoleGap ──────
+        // e.g. gap is 800ms — too big for jitter, too small to be a real hole
+        // Write it as-is but log a warning for visibility
+        LOG_INFO << "ClipExportStrategy: grey zone gap=" << diffInMsecs 
+                 << "ms (between jitterThreshold=" << jitterThresholdMs
+                 << "ms and minHoleGap=" << mMinHoleGapMs << "ms)."
+                 << " Preserving real diff.";
+        return diffInMsecs;
+    }
+
+private:
+    int64_t mMaxGapMultiplier;
+    int64_t mMinHoleGapMs;              // absolute hole threshold in ms
+    int64_t mJitterToleranceMultiplier; // jitter band = N * idealDuration
+};
+
 class DetailAbs {
 public:
   DetailAbs(Mp4WriterSinkProps &_props) {
@@ -67,11 +146,13 @@ public:
     /* DTS should be based on recorded timestamps of frames or on the fps prop
      * entirely */
     if (_props.recordedTSBasedDTS) {
-      mDTSCalc.reset(new DTSPassThroughStrategy);
+        mDTSCalc.reset(new DTSPassThroughStrategy());
+    } else if (_props.useClipExportStrategy) {  // ← new branch
+        mDTSCalc.reset(new ClipExportStrategy(_props.holeGapMultiplier));
     } else {
-      mDTSCalc.reset(new DTSFixedRateStrategy);
+        mDTSCalc.reset(new DTSFixedRateStrategy());
     }
-  };
+}
 
   void setProps(Mp4WriterSinkProps &_props) {
     mProps.reset(new Mp4WriterSinkProps(

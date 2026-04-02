@@ -9,19 +9,23 @@ class DetailH264;
 class Mp4WriterSinkProps : public ModuleProps
 {
 public:
-	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true,  bool _enableMetadata = true) : ModuleProps()
+	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true, bool _enableMetadata = true, bool _useClipExportStrategy = false, int64_t _holeGapMultiplier = 3 , int64_t _minHoleGapMs = 2000, int64_t _jitterToleranceMultiplier = 5)  : ModuleProps()
 	{
 		baseFolder = _baseFolder;
 		fps = _fps;
 		recordedTSBasedDTS = _recordedTSBasedDTS;
 		enableMetadata = _enableMetadata;
+		useClipExportStrategy = _useClipExportStrategy;
+		holeGapMultiplier = _holeGapMultiplier;
+		minHoleGapMs = _minHoleGapMs;
+    	jitterToleranceMultiplier = _jitterToleranceMultiplier;
 		if ((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX))
 		{
 			chunkTime = _chunkTime;
 		}
 		else
 		{
-			throw AIPException(AIP_FATAL, "ChuntTime should be within [1,60] minutes limit or UINT32_MAX");
+			throw AIPException(AIP_FATAL, "ChunkTime should be within [1,60] minutes limit or UINT32_MAX");
 		}
 		if (_syncTimeInSecs >= 1 && _syncTimeInSecs <= 60)
 		{
@@ -36,11 +40,15 @@ public:
 	Mp4WriterSinkProps() : ModuleProps()
 	{
 		baseFolder = "./data/Mp4_videos/";
-		chunkTime = 1; //minutes
+		chunkTime = 1;
 		syncTimeInSecs = 1;
 		fps = 30;
 		recordedTSBasedDTS = true;
 		enableMetadata = true;
+		useClipExportStrategy = false;
+		holeGapMultiplier = 3;
+		minHoleGapMs = 2000;
+		jitterToleranceMultiplier = 5;
 	}
 
 	size_t getSerializeSize()
@@ -51,7 +59,11 @@ public:
 			sizeof(chunkTime) +
 			sizeof(syncTimeInSecs) +
 			sizeof(fps) +
-			sizeof(enableMetadata);;
+			sizeof(enableMetadata) +
+			sizeof(useClipExportStrategy) +
+			sizeof(holeGapMultiplier) +
+			sizeof(minHoleGapMs) +
+			sizeof(jitterToleranceMultiplier);
 	}
 
 	std::string baseFolder;
@@ -60,6 +72,11 @@ public:
 	uint16_t fps = 30;
 	bool recordedTSBasedDTS = true;
 	bool enableMetadata = true;
+	bool useClipExportStrategy = false;
+	int64_t holeGapMultiplier = 3;
+	int64_t minHoleGapMs = 2000;
+	int64_t jitterToleranceMultiplier = 5;
+
 private:
 	friend class boost::serialization::access;
 
@@ -73,6 +90,10 @@ private:
 		ar &syncTimeInSecs;
 		ar &fps;
 		ar &enableMetadata;
+		ar &useClipExportStrategy;
+		ar &holeGapMultiplier;
+		ar &minHoleGapMs;
+		ar &jitterToleranceMultiplier;
 	}
 };
 
@@ -99,7 +120,7 @@ protected:
 	bool shouldTriggerSOS();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool enableMp4Metadata(framemetadata_sp &inputMetadata);
-	bool handleCommand(Command::CommandType type, frame_sp& fame);
+	bool handleCommand(Command::CommandType type, frame_sp& frame);
 
 	boost::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;
