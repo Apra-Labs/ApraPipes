@@ -114,7 +114,7 @@ bool H265Decoder::init()
 bool H265Decoder::term()
 {
 #ifdef ARM64
-	auto eosFrame = frame_sp(new Frame());
+	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 #endif
 	mDetail.reset();
@@ -231,7 +231,7 @@ void H265Decoder::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 bool H265Decoder::processEOS(string& pinId)
 {
-	auto eosFrame = frame_sp(new Frame());
+	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 	return true;
 }
@@ -258,9 +258,11 @@ bool H265Decoder::processSOS(frame_sp& frame)
 	mShouldTriggerSOS = false;
 
 	return mDetail->setMetadata(metadata, frame, [&](frame_sp& outputFrame) {
-		Module::send(outputFrame, mOutputPinId);
+		frame_container frames;
+		frames.insert(make_pair(mOutputPinId, outputFrame));
+		Module::send(frames);
 	}, [&]() -> frame_sp {
-		return makeFrame(mOutputMetadata);
+		return makeFrame();
 	});
 }
 
