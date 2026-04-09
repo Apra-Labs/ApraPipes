@@ -1000,15 +1000,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
  
         // Read and enqueue the filled buffer.
  
-        if (ctx.decode_pixfmt == V4L2_PIX_FMT_H264)
-        {
-            read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
-        }
-        else
-        {
-            LOG_INFO << "Currently only H264 supported" << endl;
-            ctx.in_error = 1;
-        }
+        read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
  
         ret_val = q_buffer(&ctx, v4l2_buf, buffer,
             ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
@@ -1306,11 +1298,12 @@ int h264DecoderV4L2Helper::subscribe_event(int fd, uint32_t type, uint32_t id, u
     return ret_val;
 }
  
-bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)
+bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame, uint32_t decode_pixfmt)
 {
     makeFrame = _makeFrame;
     mBuffer.reset(new Buffer());
     send =  _send;
+    ctx.decode_pixfmt = decode_pixfmt;
     return initializeDecoder();
 }
 bool h264DecoderV4L2Helper::initializeDecoder()
@@ -1323,7 +1316,6 @@ bool h264DecoderV4L2Helper::initializeDecoder()
  
     memset(&ctx, 0, sizeof (context_t));
     ctx.out_pixfmt = V4L2_PIX_FMT_ABGR32; // Try RGBA first, fallback to NV12 if not supported
-    ctx.decode_pixfmt = V4L2_PIX_FMT_H264;
     ctx.op_mem_type = V4L2_MEMORY_MMAP;
     ctx.cp_mem_type = V4L2_MEMORY_DMABUF;
     ctx.op_buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -1529,15 +1521,7 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
         memset(queue_op_planes, 0, sizeof (queue_op_planes));
  
         buffer = ctx.op_buffers[idx];
-        if (ctx.decode_pixfmt == V4L2_PIX_FMT_H264)
-        {
-            read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
-        }
-        else
-        {
-            LOG_ERROR << "Currently only H264 supported" << endl;
-            ctx.in_error = 1;
-        }
+        read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
  
         queue_v4l2_buf_op.index = idx;
         queue_v4l2_buf_op.m.planes = queue_op_planes;

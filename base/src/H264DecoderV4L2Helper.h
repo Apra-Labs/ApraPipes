@@ -389,7 +389,7 @@ public:
 
     int process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS);
 
-    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame);
+    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame, uint32_t decode_pixfmt = V4L2_PIX_FMT_H264);
 
     bool initializeDecoder();
 
