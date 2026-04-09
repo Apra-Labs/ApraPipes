@@ -256,6 +256,7 @@ SET(CORE_FILES_H
 	include/MultimediaQueueXform.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/H265Metadata.h
 	include/Mp4ReaderSource.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
@@ -282,12 +283,14 @@ SET(GENERIC_FILES
 	src/H264FrameDemuxer.cpp
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
+	src/H265Utils.cpp
 	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
 	include/H264ParserUtils.h
 	include/H264Utils.h
+	include/H265Utils.h
 	include/RTSPPusher.h
 	include/QRReader.h
 )
@@ -405,6 +408,7 @@ SET(CUDA_IP_FILES
 	src/ResizeNPPI.cpp
 	# src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
+	src/H265Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -454,6 +458,7 @@ SET(CUDA_IP_FILES_H
 	include/OverlayKernel.h
 	include/RotateNPPI.h
 	include/H264Decoder.h
+	include/H265Decoder.h
 )
 
 IF(ENABLE_ARM64)
