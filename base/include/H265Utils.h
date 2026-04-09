@@ -1,6 +1,10 @@
 #pragma once
 
 #include <stddef.h>
+#include <boost/asio/buffer.hpp>
+#include <tuple>
+
+using namespace boost::asio;
 
 class H265Utils {
 private:
@@ -17,4 +21,6 @@ public:
 
 	static H265_NAL_TYPE getNALUType(const char *buffer);
 	static bool isIDR(H265_NAL_TYPE type);
+	static bool getNALUnit(const char *buffer, size_t length, size_t &offset);
+	static std::tuple<short, const_buffer, const_buffer, const_buffer> parseNalu(const const_buffer input);
 };
