@@ -71,9 +71,14 @@ IF(ENABLE_ARM64 OR ENABLE_ARM_WITHOUT_JETSON)
 	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64 OR ENABLE_ARM_WITHOUT_JETSON)
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+ELSEIF(ENABLE_ARM64)
+	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
+	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
+	# Only check GTK3 for ARM64 - GDK3 linking causes faciallandmarks test crash
+	pkg_check_modules(GTK3 gtk+-3.0)  # Made optional for test build - no REQUIRED
 ENDIF()
 
 IF(ENABLE_CUDA)
