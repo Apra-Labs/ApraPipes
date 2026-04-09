@@ -6,7 +6,7 @@
 #include "H264DecoderNvCodecHelper.h"
 #endif
 
-#include "H265ParserUtils.h"
+// #include "H265ParserUtils.h"  // Not needed for current implementation
 #include "FrameMetadata.h"
 #include "H265Metadata.h"
 #include "Frame.h"
@@ -14,6 +14,8 @@
 #include "Utils.h"
 #include "H265Utils.h"
 #include <linux/videodev2.h>
+#include <deque>
+#include <mutex>
 
 class H265Decoder::Detail
 {
