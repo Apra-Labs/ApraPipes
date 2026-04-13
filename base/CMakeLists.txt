@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.29)
+if(POLICY CMP0146)
+  cmake_policy(SET CMP0146 OLD)
+endif()
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
@@ -47,6 +50,19 @@ message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 find_package(PkgConfig REQUIRED)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
+set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda-11.4 CACHE PATH "CUDA toolkit root")
+set(CUDA_VERSION "11.4" CACHE STRING "CUDA version")
+set(CUDA_VERSION_STRING "11.4" CACHE STRING "CUDA version string")
+set(CUDA_INCLUDE_DIRS /usr/local/cuda-11.4/include CACHE PATH "CUDA include dirs")
+set(CUDA_LIBRARIES /usr/local/cuda-11.4/lib64/libcudart.so CACHE FILEPATH "CUDA libraries")
+set(CUDA_FOUND TRUE CACHE BOOL "CUDA found")
+macro(find_cuda_helper_libs _name)
+  find_library(CUDA_${_name}_LIBRARY
+    NAMES ${_name}
+    PATHS /usr/local/cuda-11.4/lib64
+    NO_DEFAULT_PATH)
+  mark_as_advanced(CUDA_${_name}_LIBRARY)
+endmacro()
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
