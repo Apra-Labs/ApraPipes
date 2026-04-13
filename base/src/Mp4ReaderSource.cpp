@@ -1726,6 +1726,7 @@ void Mp4ReaderDetailH265::setMetadata()
 void Mp4ReaderDetailH265::readVpsSpsPps()
 {
 	mState.vdc = (mp4_video_decoder_config*)malloc(sizeof(mp4_video_decoder_config));
+	memset(mState.vdc, 0, sizeof(mp4_video_decoder_config));
 	unsigned int track_id = 1;
 	mp4_demux_get_track_video_decoder_config(mState.demux, track_id, mState.vdc);
 	auto vps = mState.vdc->hevc.vps;
@@ -1734,14 +1735,32 @@ void Mp4ReaderDetailH265::readVpsSpsPps()
 	auto vpsSize = mState.vdc->hevc.vps_size;
 	auto spsSize = mState.vdc->hevc.sps_size;
 	auto ppsSize = mState.vdc->hevc.pps_size;
-	vpsSpsPpsSize = vpsSize + spsSize + ppsSize + 12;
-	vpsSpsPpsData = (uint8_t*)malloc(vpsSpsPpsSize);
-	memcpy(vpsSpsPpsData, naluSeparator, 4);
-	memcpy(vpsSpsPpsData + 4, vps, vpsSize);
-	memcpy(vpsSpsPpsData + (vpsSize + 4), naluSeparator, 4);
-	memcpy(vpsSpsPpsData + (vpsSize + 8), sps, spsSize);
-	memcpy(vpsSpsPpsData + (vpsSize + spsSize + 8), naluSeparator, 4);
-	memcpy(vpsSpsPpsData + (vpsSize + spsSize + 12), pps, ppsSize);
+
+	// Count only non-NULL/non-empty NAL units, each prefixed with a 4-byte separator
+	size_t separatorCount = 0;
+	if (vps && vpsSize > 0) separatorCount++;
+	if (sps && spsSize > 0) separatorCount++;
+	if (pps && ppsSize > 0) separatorCount++;
+
+	vpsSpsPpsSize = (vpsSize + spsSize + ppsSize) + (separatorCount * 4);
+	vpsSpsPpsData = (uint8_t*)malloc(vpsSpsPpsSize > 0 ? vpsSpsPpsSize : 1);
+	uint8_t* ptr = vpsSpsPpsData;
+
+	if (vps && vpsSize > 0)
+	{
+		memcpy(ptr, naluSeparator, 4); ptr += 4;
+		memcpy(ptr, vps, vpsSize);     ptr += vpsSize;
+	}
+	if (sps && spsSize > 0)
+	{
+		memcpy(ptr, naluSeparator, 4); ptr += 4;
+		memcpy(ptr, sps, spsSize);     ptr += spsSize;
+	}
+	if (pps && ppsSize > 0)
+	{
+		memcpy(ptr, naluSeparator, 4); ptr += 4;
+		memcpy(ptr, pps, ppsSize);     ptr += ppsSize;
+	}
 }
 
 void Mp4ReaderDetailH265::prependVpsSpsPps(uint8_t* iFrameBuffer)
@@ -1810,7 +1829,8 @@ bool Mp4ReaderDetailH265::produceFrames(frame_container& frames)
 	if (H265Utils::isIDR(nalType))
 	{
 		prependVpsSpsPps(imgBuffer);
-		trimmedImgFrame = makeFrameTrimFront(trimmedImgFrame, 0);
+		size_t zeroOffset = 0;
+		trimmedImgFrame = makeFrameTrimFront(trimmedImgFrame, zeroOffset);
 	}
 	else
 	{

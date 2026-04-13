@@ -4,7 +4,6 @@
 #include <vector>
 #include <array>
 #include <map>
-#include "declarative/PropertyMacros.h"
 
 class H265DecoderProps : public ModuleProps
 {
@@ -17,18 +16,6 @@ public:
 	uint lowerWaterMark;
 	uint upperWaterMark;
 
-	// ============================================================
-	// Property Binding for Declarative Pipeline
-	// ============================================================
-	template<typename PropsT>
-	static void applyProperties(
-		PropsT& props,
-		const std::map<std::string, apra::ScalarPropertyValue>& values,
-		std::vector<std::string>& missingRequired
-	) {
-		apra::applyProp(props.lowerWaterMark, "lowerWaterMark", values, false, missingRequired);
-		apra::applyProp(props.upperWaterMark, "upperWaterMark", values, false, missingRequired);
-	}
 };
 
 class H265Decoder : public Module

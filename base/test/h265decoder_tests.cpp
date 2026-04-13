@@ -12,16 +12,14 @@
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
 #ifdef ARM64
-#include "EglRenderer.h"
+// EglRenderer not linked in this SNAP build (commented out of CMakeLists)
+// #include "EglRenderer.h"
 #include "ApraEGLDisplay.h"
 
 // Helper macro to skip DMA tests when EGL/DMA is not capable (headless CI)
-// Uses isDMACapable() which tests actual eglImage creation, not just display init
+// isDMACapable() not available in this build — on Jetson hardware DMA is always available
 #define SKIP_IF_NO_DMA_CAPABLE() \
-    if (!ApraEGLDisplay::isDMACapable()) { \
-        LOG_WARNING << "Skipping test - DMA/eglImage not available (headless mode)"; \
-        return; \
-    }
+    do {} while(0)
 
 #else
 #include "CudaMemCopy.h"
@@ -34,6 +32,7 @@ BOOST_AUTO_TEST_SUITE(h265decoder_tests)
 
 BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_eglrenderer,* boost::unit_test::disabled())
 {
+#if 0 // EglRenderer not linked in SNAP build
 	Logger::setLogLevel("info");
 
 	// metadata is known
@@ -71,6 +70,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_eglrenderer,* boost::unit_test::disab
 	p->term();
 	p->wait_for_all();
 	p.reset();
+#endif // EglRenderer not linked in SNAP build
 }
 
 BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_extsink)
@@ -132,7 +132,9 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_statsink)
 	mp4Reader->addOutPutPin(mp4Metadata);
 
 	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
-	mp4Reader->setNext(Decoder);
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
+	mp4Reader->setNext(Decoder, mImagePin);
 
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
@@ -216,7 +218,9 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_extSink, *utf::precondition(if_h264_e
 	mp4Reader->addOutPutPin(mp4Metadata);
 
 	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
-	mp4Reader->setNext(Decoder);
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
+	mp4Reader->setNext(Decoder, mImagePin);
 
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
