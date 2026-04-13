@@ -1919,8 +1919,31 @@ bool Mp4ReaderSource::init()
 			{ executeErrorCallback(error); } // Pass error callback
 			));
 	}
+	else if (mFrameType == FrameMetadata::FrameType::HEVC_DATA)
+	{
+		mDetail.reset(new Mp4ReaderDetailH265(
+			props,
+			[&](size_t size, string &pinId)
+			{ return makeFrame(size, pinId); },
+			[&](frame_sp &frame, size_t &size, string &pinId)
+			{ return makeFrame(frame, size, pinId); },
+			[&](frame_sp frame)
+			{ return Module::sendEOS(frame); },
+			[&](std::string &pinId, framemetadata_sp &metadata)
+			{ return setImageMetadata(pinId, metadata); },
+			[&](frame_sp &frame)
+			{ return Module::sendMp4ErrorFrame(frame); },
+			[&](Mp4ReaderSourceProps &props)
+			{ return setProps(props); },
+			[&](frame_sp &frame, size_t &size)
+			{ return makeFrame(frame, size); },
+			[&](const APErrorObject &error)
+			{ executeErrorCallback(error); } // Pass error callback
+			));
+	}
 	mDetail->encodedImagePinId = encodedImagePinId;
 	mDetail->h264ImagePinId = h264ImagePinId;
+	mDetail->h265ImagePinId = h265ImagePinId;
 	mDetail->metadataFramePinId = metadataFramePinId;
 	mDetail->controlModule = controlModule;
 	return mDetail->Init();
@@ -2005,6 +2028,11 @@ std::string Mp4ReaderSource::addOutPutPin(framemetadata_sp& metadata)
 		h264ImagePinId = Module::addOutputPin(metadata);
 		return h264ImagePinId;
 	}
+	else if (outFrameType == FrameMetadata::FrameType::HEVC_DATA)
+	{
+		h265ImagePinId = Module::addOutputPin(metadata);
+		return h265ImagePinId;
+	}
 	else
 	{
 		metadataFramePinId = Module::addOutputPin(metadata);
@@ -2031,7 +2059,7 @@ bool Mp4ReaderSource::validateOutputPins()
 
 	FrameMetadata::FrameType frameType = outputMetadataByPin->getFrameType();
 
-	if (frameType != FrameMetadata::MP4_VIDEO_METADATA && frameType != FrameMetadata::ENCODED_IMAGE && frameType != FrameMetadata::H264_DATA)
+	if (frameType != FrameMetadata::MP4_VIDEO_METADATA && frameType != FrameMetadata::ENCODED_IMAGE && frameType != FrameMetadata::H264_DATA && frameType != FrameMetadata::HEVC_DATA)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be MP4_VIDEO_METADATA or ENCODED_IMAGE. Actual<" << frameType << ">";
 		return false;
