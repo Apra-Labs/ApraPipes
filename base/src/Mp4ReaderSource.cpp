@@ -3,6 +3,8 @@
 #include "Mp4VideoMetadata.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
+#include "H265Metadata.h"
+#include "H265Utils.h"
 #include "Frame.h"
 #include "Command.h"
 #include "libmp4.h"
@@ -1193,6 +1195,7 @@ public:
 	std::function<void(std::string& pinId, framemetadata_sp& metadata)> mSetMetadata;
 	std::function<void(Mp4ReaderSourceProps& props)> setMp4ReaderProps;
 	std::string h264ImagePinId;
+	std::string h265ImagePinId;
 	std::string encodedImagePinId;
 	std::string metadataFramePinId;
 	boost::shared_ptr<Module> controlModule = nullptr;
