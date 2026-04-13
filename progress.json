@@ -6,22 +6,22 @@
     {
       "id": "phase-0",
       "name": "Branch Setup (cherry-pick H265Decoder onto NVR_Snapshot_JP6)",
-      "status": "in_progress",
+      "status": "completed",
       "tasks": [
         { "id": "0.1", "name": "Cherry-pick H265Decoder commits from feature/h265-decoder-v4l2", "type": "task", "status": "completed", "notes": "Cherry-picked 10 H265 commits (270e99448..c972af11e) onto bug_fix/h265-mp4reader-support. Resolved 3 conflicts: H264DecoderV4L2Helper.cpp (kept RGBA pixfmt, removed duplicate decode_pixfmt hardcode), CMakeLists.txt GENERIC_FILES_H (added H265Utils.h), CMakeLists.txt GTK3 block (kept ARM64 flexible variant). PLAN.md + tracking files committed." },
-        { "id": "V0", "name": "VERIFY 0 — Cherry-pick checkpoint", "type": "verify", "status": "blocked", "notes": "BLOCKED: git push to origin failed — no SSH key or HTTPS credentials configured on this machine. Cherry-pick itself is complete and correct: git log NVR_Snapshot_JP6..HEAD shows all 10 H265 commits. Build: cmake reconfiguration fails with CUDA FindPackage error (pre-existing env issue); existing binary from prior build run still present. H265 tests fail as expected (Phase 1 Mp4ReaderSource changes not yet implemented). Please configure GitHub credentials or push manually, then approve to proceed to Phase 1." }
+        { "id": "V0", "name": "VERIFY 0 — Cherry-pick checkpoint", "type": "verify", "status": "completed", "notes": "APPROVED by PM. Cherry-pick complete. Proceeding to Phase 1." }
       ]
     },
     {
       "id": "phase-1",
       "name": "Code Implementation",
-      "status": "pending",
+      "status": "completed",
       "tasks": [
-        { "id": "1.1", "name": "Confirm libmp4 codec detection call site", "type": "task", "status": "pending", "notes": "" },
-        { "id": "1.2", "name": "Add headers and pin member", "type": "task", "status": "pending", "notes": "" },
-        { "id": "1.3", "name": "Implement Mp4ReaderDetailH265 class", "type": "task", "status": "pending", "notes": "" },
-        { "id": "1.4", "name": "Auto-detect codec in init(), update addOutPutPin()/validateOutputPins()", "type": "task", "status": "pending", "notes": "" },
-        { "id": "V1", "name": "VERIFY 1 — Code review checkpoint", "type": "verify", "status": "pending", "notes": "" }
+        { "id": "1.1", "name": "Confirm libmp4 codec detection call site", "type": "task", "status": "completed", "notes": "Confirmed: mp4_demux_get_track_video_decoder_config() at Mp4ReaderSource.cpp:1362 (readSPSPPS). vdc->codec can be checked against MP4_VIDEO_CODEC_HEVC (libmp4.h:91). For H265, use vdc->hevc.vps/sps/pps and their _size fields. Codec detection for init() uses outMetadata->getFrameType() == HEVC_DATA (explicit path) — no file-open needed for detection." },
+        { "id": "1.2", "name": "Add headers and pin member", "type": "task", "status": "completed", "notes": "Added #include H265Metadata.h and H265Utils.h to Mp4ReaderSource.cpp. Added h265ImagePinId to Mp4ReaderDetailAbs base class. Added h265ImagePinId to Mp4ReaderSource private members. Added Mp4ReaderDetailH265 forward declaration to header." },
+        { "id": "1.3", "name": "Implement Mp4ReaderDetailH265 class", "type": "task", "status": "completed", "notes": "Added Mp4ReaderDetailH265 class declaration and full implementation. readVpsSpsPps() reads hevc.vps/sps/pps from libmp4 vdc struct, builds 12-byte-header VPS+SPS+PPS NAL buffer. prependVpsSpsPps() prepends VPS+SPS+PPS before IDR frames. produceFrames() uses H265Utils::getNALUType/isIDR. mp4Seek/getGop/sendEndOfStream mirror H264. mH265Metadata added to base class." },
+        { "id": "1.4", "name": "Auto-detect codec in init(), update addOutPutPin()/validateOutputPins()", "type": "task", "status": "completed", "notes": "Added HEVC_DATA branch in init() to instantiate Mp4ReaderDetailH265 and assign h265ImagePinId. Added HEVC_DATA branch in addOutPutPin(). Added HEVC_DATA to validateOutputPins() whitelist. Commits: fecf4eb, be83609, 7fdcf3f." },
+        { "id": "V1", "name": "VERIFY 1 — Code review checkpoint", "type": "verify", "status": "blocked", "notes": "STOP: All Phase 1 tasks committed locally (commits fecf4eb..7fdcf3f on bug_fix/h265-mp4reader-support). Push blocked — no remote credentials. Awaiting PM review and APPROVED signal to proceed to Phase 2 (build)." }
       ]
     },
     {
