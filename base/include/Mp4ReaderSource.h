@@ -5,6 +5,7 @@
 class Mp4ReaderDetailAbs;
 class Mp4ReaderDetailJpeg;
 class Mp4ReaderDetailH264;
+class Mp4ReaderDetailH265;
 
 class Mp4ReaderSourceProps : public ModuleProps
 {

@@ -1171,6 +1171,7 @@ protected:
 	boost::shared_ptr<OrderedCacheOfFiles> cof;
 	framemetadata_sp updatedEncodedImgMetadata;
 	framemetadata_sp mH264Metadata;
+	framemetadata_sp mH265Metadata;
 	std::function<void(const APErrorObject& error)> errorCallback;
 	/*
 		mState.end = true is possible only in two cases:
@@ -1242,6 +1243,26 @@ private:
 	bool seekedToEndTS = false;
 	int skipOffset = 512;
 	char naluSeprator[4] = { 00 ,00, 00 ,01 };
+};
+
+class Mp4ReaderDetailH265 : public Mp4ReaderDetailAbs
+{
+public:
+	Mp4ReaderDetailH265(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame, std::function<void(Mp4ReaderSourceProps& props)> _setProps, std::function<frame_sp(frame_sp& bigFrame, size_t& size)> _makeFrameTrimFront, std::function<void(const APErrorObject& error)> _errorCallback) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame, _setProps, _makeFrameTrimFront, _errorCallback)
+	{}
+	~Mp4ReaderDetailH265() {}
+	void setMetadata();
+	void readVpsSpsPps();
+	bool produceFrames(frame_container& frames);
+	void prependVpsSpsPps(uint8_t* iFrameBuffer);
+	void sendEndOfStream();
+	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame);
+	int getGop();
+private:
+	uint8_t* vpsSpsPpsData = nullptr;
+	size_t vpsSpsPpsSize = 0;
+	char naluSeparator[4] = { 00, 00, 00, 01 };
 };
 
 void Mp4ReaderDetailJpeg::setMetadata()
@@ -1678,6 +1699,161 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			randomSeek(frameTSInMsecs);
 		}
 		
+	}
+	return true;
+}
+
+void Mp4ReaderDetailH265::setMetadata()
+{
+	mH265Metadata = framemetadata_sp(new H265Metadata(mWidth, mHeight));
+
+	if (!mH265Metadata->isSet())
+	{
+		return;
+	}
+	auto h265Metadata = FrameMetadataFactory::downcast<H265Metadata>(mH265Metadata);
+	h265Metadata->direction = mDirection;
+	h265Metadata->mp4Seek = isMp4SeekFrame;
+	h265Metadata->setData(*h265Metadata);
+
+	readVpsSpsPps();
+
+	Mp4ReaderDetailAbs::setMetadata();
+	mSetMetadata(h265ImagePinId, mH265Metadata);
+	return;
+}
+
+void Mp4ReaderDetailH265::readVpsSpsPps()
+{
+	mState.vdc = (mp4_video_decoder_config*)malloc(sizeof(mp4_video_decoder_config));
+	unsigned int track_id = 1;
+	mp4_demux_get_track_video_decoder_config(mState.demux, track_id, mState.vdc);
+	auto vps = mState.vdc->hevc.vps;
+	auto sps = mState.vdc->hevc.sps;
+	auto pps = mState.vdc->hevc.pps;
+	auto vpsSize = mState.vdc->hevc.vps_size;
+	auto spsSize = mState.vdc->hevc.sps_size;
+	auto ppsSize = mState.vdc->hevc.pps_size;
+	vpsSpsPpsSize = vpsSize + spsSize + ppsSize + 12;
+	vpsSpsPpsData = (uint8_t*)malloc(vpsSpsPpsSize);
+	memcpy(vpsSpsPpsData, naluSeparator, 4);
+	memcpy(vpsSpsPpsData + 4, vps, vpsSize);
+	memcpy(vpsSpsPpsData + (vpsSize + 4), naluSeparator, 4);
+	memcpy(vpsSpsPpsData + (vpsSize + 8), sps, spsSize);
+	memcpy(vpsSpsPpsData + (vpsSize + spsSize + 8), naluSeparator, 4);
+	memcpy(vpsSpsPpsData + (vpsSize + spsSize + 12), pps, ppsSize);
+}
+
+void Mp4ReaderDetailH265::prependVpsSpsPps(uint8_t* iFrameBuffer)
+{
+	iFrameBuffer -= 4;
+	memcpy(iFrameBuffer, naluSeparator, 4);
+	iFrameBuffer -= vpsSpsPpsSize;
+	memcpy(iFrameBuffer, vpsSpsPpsData, vpsSpsPpsSize);
+}
+
+int Mp4ReaderDetailH265::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame)
+{
+	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
+	if (ret == -2)
+	{
+		seekedToFrame = mState.mFramesInVideo;
+		ret = 0;
+	}
+	return ret;
+}
+
+int Mp4ReaderDetailH265::getGop()
+{
+	int gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
+	return gop;
+}
+
+void Mp4ReaderDetailH265::sendEndOfStream()
+{
+	auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, 0));
+	sendEOS(frame);
+}
+
+bool Mp4ReaderDetailH265::produceFrames(frame_container& frames)
+{
+	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, h265ImagePinId);
+	size_t imgSize = 0;
+	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, metadataFramePinId);
+	size_t metadataSize = 0;
+	uint64_t frameTSInMsecs;
+	int32_t mp4FIndex = 0;
+
+	try
+	{
+		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
+	}
+	catch (const std::exception& e)
+	{
+		LOG_ERROR << e.what();
+		attemptFileClose();
+	}
+
+	if (!imgSize)
+	{
+		return true;
+	}
+
+	size_t totalImageSize = imgSize + vpsSpsPpsSize + 4;
+	auto trimmedImgFrame = makeFrameTrim(imgFrame, totalImageSize, h265ImagePinId);
+
+	uint8_t* imgBuffer = (uint8_t*)trimmedImgFrame->data();
+	imgBuffer += vpsSpsPpsSize + 4;
+
+	auto nalType = H265Utils::getNALUType((const char*)imgBuffer);
+
+	if (H265Utils::isIDR(nalType))
+	{
+		prependVpsSpsPps(imgBuffer);
+		trimmedImgFrame = makeFrameTrimFront(trimmedImgFrame, 0);
+	}
+	else
+	{
+		imgBuffer -= 4;
+		memcpy(imgBuffer, naluSeparator, 4);
+		trimmedImgFrame = makeFrameTrimFront(trimmedImgFrame, vpsSpsPpsSize);
+	}
+
+	trimmedImgFrame->timestamp = frameTSInMsecs;
+	trimmedImgFrame->fIndex = mp4FIndex;
+
+	if (!mProps.giveLiveTS)
+	{
+		trimmedImgFrame->timestamp = frameTSInMsecs;
+	}
+	else
+	{
+		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+		auto nowTS = dur.count();
+		trimmedImgFrame->timestamp = nowTS;
+	}
+
+	frames.insert(make_pair(h265ImagePinId, trimmedImgFrame));
+	if (metadataSize)
+	{
+		auto trimmedMetadataFrame = makeFrameTrim(metadataFrame, metadataSize, metadataFramePinId);
+		trimmedMetadataFrame->timestamp = frameTSInMsecs;
+		trimmedMetadataFrame->fIndex = mp4FIndex;
+		if (!mProps.giveLiveTS)
+		{
+			trimmedMetadataFrame->timestamp = frameTSInMsecs;
+		}
+		else
+		{
+			trimmedMetadataFrame->timestamp = trimmedImgFrame->timestamp;
+		}
+		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
+	}
+	if (isMp4SeekFrame)
+	{
+		isMp4SeekFrame = false;
+		setMetadata();
 	}
 	return true;
 }
