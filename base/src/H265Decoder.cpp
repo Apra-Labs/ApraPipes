@@ -14,6 +14,9 @@
 #include "Utils.h"
 #include "H265Utils.h"
 #include <linux/videodev2.h>
+#ifdef ARM64
+#include "v4l2_nv_extensions.h"
+#endif
 #include <deque>
 #include <mutex>
 
@@ -45,7 +48,7 @@ public:
 				rawOutMetadata->setData(*rawOutMetadata);
 #ifdef ARM64
 				helper.reset(new h264DecoderV4L2Helper());
-				return helper->init(send, makeFrame, V4L2_PIX_FMT_HEVC);
+				return helper->init(send, makeFrame, V4L2_PIX_FMT_H265);
 #else
 				helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
 				return helper->init(send, makeFrame);
@@ -92,7 +95,7 @@ H265Decoder::H265Decoder(H265DecoderProps _props) : Module(TRANSFORM, "H265Decod
 {
 	mDetail.reset(new Detail(mProps));
 #ifdef ARM64
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 #else
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
 #endif
@@ -255,15 +258,27 @@ bool H265Decoder::handleCommand(Command::CommandType type, frame_sp& frame)
 bool H265Decoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
-	mShouldTriggerSOS = false;
-
-	return mDetail->setMetadata(metadata, frame, [&](frame_sp& outputFrame) {
+	auto ret = mDetail->setMetadata(metadata, frame, [&](frame_sp& outputFrame) {
 		frame_container frames;
 		frames.insert(make_pair(mOutputPinId, outputFrame));
 		Module::send(frames);
 	}, [&]() -> frame_sp {
 		return makeFrame();
 	});
+	if (ret)
+	{
+		mShouldTriggerSOS = false;
+#ifdef ARM64
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+		RawImageMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::RGBA, CV_8UC4, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true);
+		rawOutMetadata->setData(OutputMetadata);
+#else
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
+		rawOutMetadata->setData(OutputMetadata);
+#endif
+	}
+	return ret;
 }
 
 bool H265Decoder::process(frame_container& frames)
