@@ -11,6 +11,8 @@
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
+#include "JPEGEncoderL4TM.h"
+#include "MemTypeConversion.h"
 #ifdef ARM64
 // EglRenderer not linked in this SNAP build (commented out of CMakeLists)
 // #include "EglRenderer.h"
@@ -36,7 +38,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_eglrenderer,* boost::unit_test::disab
 	Logger::setLogLevel("info");
 
 	// metadata is known
-	std::string videoPath = "./data/h265_bunny_30frames.mp4";
+	std::string videoPath = "/home/developer/ws_yash/ApraPipes_SNAP/data/h265_bunny_30frames.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h265ImageMetadata = framemetadata_sp(new H265Metadata(0, 0));
@@ -79,7 +81,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_extsink)
 	Logger::setLogLevel("info");
 
 	// metadata is known
-	std::string videoPath = "./data/h265_bunny_30frames.mp4";
+	std::string videoPath = "/home/developer/ws_yash/ApraPipes_SNAP/data/h265_bunny_30frames.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h265ImageMetadata = framemetadata_sp(new H265Metadata(0, 0));
@@ -120,7 +122,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_statsink)
 	SKIP_IF_NO_DMA_CAPABLE();
 	Logger::setLogLevel("info");
 
-	std::string videoPath = "./data/h265_bunny_30frames.mp4";
+	std::string videoPath = "/home/developer/ws_yash/ApraPipes_SNAP/data/h265_bunny_30frames.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	mp4ReaderProps.logHealth = true;
 	mp4ReaderProps.logHealthFrequency = 100;
@@ -160,13 +162,70 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_statsink)
 	p.reset();
 }
 
+BOOST_AUTO_TEST_CASE(h265_decode_save_jpegs)
+{
+	SKIP_IF_NO_DMA_CAPABLE();
+	Logger::setLogLevel("info");
+
+	system("mkdir -p /tmp/h265_frames");
+
+	std::string videoPath = "/home/developer/ws_yash/ApraPipes_SNAP/data/h265_bunny_30frames.mp4";
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
+	mp4ReaderProps.fps = 30;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h265ImageMetadata = framemetadata_sp(new H265Metadata(0, 0));
+	mp4Reader->addOutPutPin(h265ImageMetadata);
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	// H265Decoder on ARM64 outputs RGBA DMABUF
+	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
+	mp4Reader->setNext(Decoder, mImagePin);
+
+	// DMABUF -> HOST conversion required before CPU-based JPEG encoder
+	auto memConv = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	Decoder->setNext(memConv);
+
+	JPEGEncoderL4TMProps encoderProps;
+	encoderProps.quality = 90;
+	auto jpegEncoder = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(encoderProps));
+	memConv->setNext(jpegEncoder);
+
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	jpegEncoder->addOutputPin(encodedImageMetadata);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(
+		FileWriterModuleProps("/tmp/h265_frames/frame_????.jpg")));
+	jpegEncoder->setNext(fileWriter);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(8);
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+
+	LOG_INFO << "h265_decode_save_jpegs: check /tmp/h265_frames/ for saved JPEG frames";
+}
+
 #else
 
 BOOST_AUTO_TEST_CASE(h265_basic_decode_test, *utf::precondition(if_h264_encoder_supported()))
 {
 	Logger::setLogLevel("info");
 
-	std::string videoPath = "./data/h265_bunny_30frames.mp4";
+	std::string videoPath = "/home/developer/ws_yash/ApraPipes_SNAP/data/h265_bunny_30frames.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h265ImageMetadata = framemetadata_sp(new H265Metadata(0, 0));
@@ -206,7 +265,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_extSink, *utf::precondition(if_h264_e
 {
 	Logger::setLogLevel("info");
 
-	std::string videoPath = "./data/h265_bunny_30frames.mp4";
+	std::string videoPath = "/home/developer/ws_yash/ApraPipes_SNAP/data/h265_bunny_30frames.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	mp4ReaderProps.logHealth = true;
 	mp4ReaderProps.logHealthFrequency = 100;
