@@ -705,6 +705,11 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     ** the decoder knows the stream resolution and can allocate
     ** appropriate buffers when REQBUFS is called.
     */
+    pthread_mutex_lock(&ctx->queue_lock);
+    while (!ctx->first_op_buf_queued && !ctx->in_error)
+        pthread_cond_wait(&ctx->queue_cond, &ctx->queue_lock);
+    pthread_mutex_unlock(&ctx->queue_lock);
+
     fprintf(stderr, "DEBUG: capture_thread before first dq_event (event_buf=%p, size=%zu)\n",
             (void*)event_buf, sizeof(event_buf)); fflush(stderr);
     do
@@ -1005,6 +1010,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
             {
                 LOG_ERROR << "Error DQing buffer at output plane" << endl;
                 ctx.in_error = 1;
+                return ctx.eos;  /* buffer is uninitialized — do not dereference */
             }
         }
         else
@@ -1012,9 +1018,17 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
             allow_DQ = true;
             buffer = ctx.op_buffers[v4l2_buf.index];
         }
- 
+
+        /* Safety: don't dereference a NULL/corrupt buffer pointer */
+        if (!buffer || !buffer->planes[0].data)
+        {
+            LOG_ERROR << "decode_process: NULL buffer pointer, skipping" << endl;
+            ctx.in_error = 1;
+            return ctx.eos;
+        }
+
         // Read and enqueue the filled buffer.
- 
+
         read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
  
         ret_val = q_buffer(&ctx, v4l2_buf, buffer,
@@ -1179,6 +1193,7 @@ int h264DecoderV4L2Helper::dq_buffer(context_t * ctx, struct v4l2_buffer &v4l2_b
         if (v4l2_buf.type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE)
         {
             ctx->num_queued_op_buffers++;
+            ctx->first_op_buf_queued = true;
         }
         pthread_cond_broadcast(&ctx->queue_cond);
     }
@@ -1348,9 +1363,13 @@ bool h264DecoderV4L2Helper::initializeDecoder()
         } \
     } while(0)
  
+    /* Save codec pixfmt set by init() before zeroing ctx, then restore it.
+     * memset() would overwrite decode_pixfmt that was set in init() before initializeDecoder() */
+    uint32_t saved_decode_pixfmt = ctx.decode_pixfmt;
     memset(&ctx, 0, sizeof (context_t));
+    ctx.decode_pixfmt = saved_decode_pixfmt;
     ctx.out_pixfmt = V4L2_PIX_FMT_ABGR32; // Try RGBA first, fallback to NV12 if not supported
-    ctx.op_mem_type = V4L2_MEMORY_MMAP;    // default; overridden to USERPTR for JP5 below
+    ctx.op_mem_type = V4L2_MEMORY_MMAP;
     ctx.cp_mem_type = V4L2_MEMORY_DMABUF;
     ctx.op_buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     ctx.cp_buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -1386,11 +1405,9 @@ bool h264DecoderV4L2Helper::initializeDecoder()
         else
         {
             LOG_INFO << "Successfully opened device " << DECODER_DEV_JP5 << endl;
-            /* JP5: libnvv4l2 uses a virtual-fd layer. VIDIOC_EXPBUF returns fd=-1 and
-             * v4l2_mmap() fails (ENODEV) because the virtual fd can't be mmap'd at the
-             * kernel level.  The output plane (compressed H264/H265 bitstream) DOES support
-             * V4L2_MEMORY_USERPTR — we pass heap-allocated buffers directly.
-             * Set this BEFORE the first REQBUFS to avoid corrupting libnvv4l2 state. */
+            /* JP5: libnvv4l2 is a virtual-fd layer. VIDIOC_EXPBUF returns fd=-1 and
+             * v4l2_mmap() also fails on this device. Use V4L2_MEMORY_USERPTR instead
+             * and allocate heap buffers — this is the only working output plane mode. */
             ctx.op_mem_type = V4L2_MEMORY_USERPTR;
             fprintf(stderr, "DEBUG: JP5 detected — using V4L2_MEMORY_USERPTR for output plane\n");
             fflush(stderr);
@@ -1477,12 +1494,35 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     }
     CHECK_CANARY("after REQBUFS");
 
-    if (ctx.op_mem_type == V4L2_MEMORY_MMAP)
+    if (ctx.op_mem_type == V4L2_MEMORY_USERPTR)
     {
-        /* JP6 MMAP path:
-        **   QUERYBUF gets length/mem_offset, EXPBUF gets a real dmabuf fd,
-        **   Buffer::map() does mmap(planes[j].fd, mem_offset).
+        /* JP5 USERPTR path: allocate heap memory for each output buffer plane.
+         * No QUERYBUF/EXPBUF/mmap needed — the driver accepts user pointers directly. */
+        fprintf(stderr, "DEBUG: JP5 USERPTR path: op_num_buffers=%u op_num_planes=%u\n",
+                ctx.op_num_buffers, ctx.op_num_planes); fflush(stderr);
+        for (uint32_t i = 0; i < ctx.op_num_buffers; ++i)
+        {
+            for (uint32_t j = 0; j < ctx.op_num_planes; ++j)
+            {
+                uint32_t size = ctx.op_planefmts[j].sizeimage;
+                if (size == 0) size = CHUNK_SIZE;
+                fprintf(stderr, "DEBUG: JP5 op_planefmts[%u].sizeimage=%u\n", j, size); fflush(stderr);
+                ctx.op_buffers[i]->planes[j].data   = new uint8_t[size];
+                ctx.op_buffers[i]->planes[j].length  = size;
+                ctx.op_buffers[i]->planes[j].bytesused = 0;
+                fprintf(stderr, "DEBUG: JP5 USERPTR alloc buf=%u plane=%u size=%u ptr=%p\n",
+                        i, j, size, (void*)ctx.op_buffers[i]->planes[j].data); fflush(stderr);
+            }
+        }
+    }
+    else
+    {
+        /* MMAP path (JP6 and JP5 fallback):
+        **   QUERYBUF gets length/mem_offset.
+        **   EXPBUF gets a real dmabuf fd (JP6), then Buffer::map() does mmap(fd, offset).
         */
+        fprintf(stderr, "DEBUG: MMAP path: op_num_buffers=%u op_num_planes=%u\n",
+                ctx.op_num_buffers, ctx.op_num_planes); fflush(stderr);
         for (uint32_t i = 0; i < ctx.op_num_buffers; ++i)
         {
             memset(&op_v4l2_buf, 0, sizeof (struct v4l2_buffer));
@@ -1506,7 +1546,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
                     op_v4l2_buf.m.planes[j].length;
                 ctx.op_buffers[i]->planes[j].mem_offset =
                     op_v4l2_buf.m.planes[j].m.mem_offset;
-                LOG_INFO << "JP6 QUERYBUF buf=" << i << " plane=" << j
+                LOG_INFO << "QUERYBUF buf=" << i << " plane=" << j
                          << " length=" << op_v4l2_buf.m.planes[j].length
                          << " mem_offset=" << op_v4l2_buf.m.planes[j].m.mem_offset << endl;
             }
@@ -1519,56 +1559,23 @@ bool h264DecoderV4L2Helper::initializeDecoder()
             {
                 op_expbuf.plane = j;
                 ret = v4l2_ioctl(ctx.fd, VIDIOC_EXPBUF, &op_expbuf);
-                if (ret)
+                if (ret || op_expbuf.fd < 0)
                 {
-                    LOG_ERROR << "Error in exporting buffer at index " << i << endl;
-                    ctx.in_error = 1;
-                }
-                ctx.op_buffers[i]->planes[j].fd = op_expbuf.fd;
-                LOG_INFO << "JP6 EXPBUF buf=" << i << " plane=" << j
-                         << " fd=" << op_expbuf.fd << endl;
-            }
-
-            if (ctx.op_buffers[i]->map())
-            {
-                LOG_ERROR << "Buffer mapping error on output plane (JP6 mmap)" << endl;
-                ctx.in_error = 1;
-            }
-        }
-    }
-    else /* V4L2_MEMORY_USERPTR — JP5 path */
-    {
-        /* JP5 USERPTR path:
-        **   libnvv4l2 virtual fd cannot be mmap()'d at the kernel level.
-        **   The output plane (H264/H265 compressed bitstream) supports USERPTR.
-        **   Allocate heap memory for each output plane buffer and pass it
-        **   via USERPTR.  No QUERYBUF/EXPBUF/mmap needed.
-        **   Buffer size = sizeimage returned by S_FMT driver response.
-        */
-        fprintf(stderr, "DEBUG: JP5 USERPTR path: op_num_buffers=%u op_num_planes=%u\n",
-                ctx.op_num_buffers, ctx.op_num_planes); fflush(stderr);
-        for (uint32_t i = 0; i < ctx.op_num_buffers; ++i)
-        {
-            for (uint32_t j = 0; j < ctx.op_num_planes; ++j)
-            {
-                uint32_t size = ctx.op_planefmts[j].sizeimage;
-                fprintf(stderr, "DEBUG: JP5 op_planefmts[%u].sizeimage=%u\n", j, size); fflush(stderr);
-                if (size == 0) size = CHUNK_SIZE; /* fallback if driver returns 0 */
-                ctx.op_buffers[i]->planes[j].length = size;
-                ctx.op_buffers[i]->planes[j].data   = new uint8_t[size];
-                ctx.op_buffers[i]->planes[j].fd     = -1;
-                ctx.op_buffers[i]->planes[j].mem_offset = 0;
-                if (!ctx.op_buffers[i]->planes[j].data)
-                {
-                    LOG_ERROR << "JP5: heap alloc failed for output buf=" << i << " plane=" << j << endl;
+                    LOG_ERROR << "EXPBUF buf=" << i << " plane=" << j << " failed" << endl;
                     ctx.in_error = 1;
                 }
                 else
                 {
-                    fprintf(stderr, "DEBUG: JP5 USERPTR alloc buf=%u plane=%u size=%u ptr=%p\n",
-                            i, j, size, (void*)ctx.op_buffers[i]->planes[j].data);
-                    fflush(stderr);
+                    ctx.op_buffers[i]->planes[j].fd = op_expbuf.fd;
+                    LOG_INFO << "EXPBUF buf=" << i << " plane=" << j
+                             << " fd=" << op_expbuf.fd << endl;
                 }
+            }
+
+            if (ctx.op_buffers[i]->map())
+            {
+                LOG_ERROR << "Buffer mapping error on output plane" << endl;
+                ctx.in_error = 1;
             }
         }
     }
@@ -1584,9 +1591,9 @@ bool h264DecoderV4L2Helper::initializeDecoder()
         LOG_ERROR << "Streaming error on output plane" << endl;
         ctx.in_error = 1;
     }
- 
+
     CHECK_CANARY("after STREAMON");
-    fprintf(stderr, "DEBUG: STREAMON done, starting capture thread, op_mem_type=%d\n", ctx.op_mem_type);
+    fprintf(stderr, "DEBUG: STREAMON done, starting capture thread\n");
     ctx.op_streamon = 1;
     // Create Capture loop thread.
     typedef void * (*THREADFUNCPTR)(void *);
@@ -1594,6 +1601,21 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     pthread_create(&ctx.dec_capture_thread, NULL,h264DecoderV4L2Helper::capture_thread, (void *) (this));
     CHECK_CANARY("before return");
     fprintf(stderr, "DEBUG: initializeDecoder() returning true\n");
+    return true;
+}
+
+bool h264DecoderV4L2Helper::startStreamAndCaptureThread()
+{
+    ret = v4l2_ioctl(ctx.fd, VIDIOC_STREAMON, &ctx.op_buf_type);
+    if (ret != 0)
+    {
+        LOG_ERROR << "Streaming error on output plane (deferred)" << endl;
+        ctx.in_error = 1;
+        return false;
+    }
+    fprintf(stderr, "DEBUG: deferred STREAMON done, starting capture thread\n"); fflush(stderr);
+    ctx.op_streamon = 1;
+    pthread_create(&ctx.dec_capture_thread, NULL, h264DecoderV4L2Helper::capture_thread, (void *)(this));
     return true;
 }
 int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS)
@@ -1652,7 +1674,7 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
         }
         idx++;
     }
- 
+
     // Dequeue and queue loop on output plane.
     ctx.eos = decode_process(ctx,inputFrameBuffer, inputFrameSize);
    
@@ -1700,7 +1722,12 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
     {
         if (ctx.dec_capture_thread)
         {
+            /* Signal capture thread to exit before joining.
+             * Without this, if got_eos was not set (e.g. DQ error on output plane),
+             * the capture thread blocks forever in dq_buffer on the capture plane. */
+            ctx.got_eos = 1;
             pthread_join(ctx.dec_capture_thread, NULL);
+            ctx.dec_capture_thread = 0;
         }
  
         // All the allocated DMA buffers must be destroyed.
