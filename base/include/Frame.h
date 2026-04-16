@@ -57,6 +57,7 @@ public:
 		GENERAL = 0,
 		MP4_PLYB_EOS,
 		MP4_SEEK_EOS,
+		CODEC_SWITCH_EOS,
 	};
 	EoSFrame();
 	virtual ~EoSFrame() {}
