@@ -3,15 +3,67 @@
   "branch": "feat/video-decoder-unified",
   "last_updated": "2026-04-16",
   "tasks": [
-    {"id": "0.1", "title": "Merge bug_fix/h265-mp4reader-support into feat/video-decoder-unified", "status": "completed", "notes": "Merged at commit 049b665b9 — all H265 infrastructure (H265Decoder, H265Metadata, H265Utils, V4L2 decode_pixfmt param, test data) now present"},
-    {"id": "0.verify", "title": "VERIFY: h264+h265 tests pass after merge, build clean", "status": "completed", "type": "verify", "notes": "BUILD: clean. h265decoder_tests: *** No errors detected. h264decoder_tests: 1 pre-existing failure (mp4reader_decoder_eglrenderer, EglRenderer not linked, CWD path) — confirmed pre-existing on NVR_Snapshot_JP6. PM approved proceeding."},
-    {"id": "1.1", "title": "Add SOS_FRAME to FrameType enum in FrameMetadata.h", "status": "skipped", "notes": "not needed — using existing processSOS mechanism (Module base calls processSOS(frame) when shouldTriggerSOS() returns true)"},
-    {"id": "1.2", "title": "Create SosFrameMetadata.h with CodecType enum", "status": "skipped", "notes": "not needed — using existing processSOS mechanism (Module base calls processSOS(frame) when shouldTriggerSOS() returns true)"},
-    {"id": "1.3", "title": "Add CODEC_SWITCH_EOS to EoSFrame::EoSFrameType in Frame.h", "status": "completed", "notes": "Already present in Frame.h:60 — merged from bug_fix/h265-mp4reader-support"},
-    {"id": "2.1", "title": "Create base/include/VideoDecoder.h", "status": "completed", "notes": "Updated to clean header (removed spurious buffer members/helper method decls from previous merge)"},
-    {"id": "2.2", "title": "Create base/src/VideoDecoder.cpp with state machine", "status": "completed", "notes": "processSOS detects H264_DATA/HEVC_DATA and inits V4L2 helper with correct FourCC. process() passes all frames to compute(). processEOS flushes V4L2 helper and sets mShouldTriggerSOS=true."},
-    {"id": "2.3", "title": "Update base/CMakeLists.txt for VideoDecoder", "status": "completed", "notes": "Already present from merge: VideoDecoder.cpp at line 433, VideoDecoder.h at 484, videodecoder_tests.cpp at 578 (ARM64 block)"},
-    {"id": "3.1", "title": "Create base/test/videodecoder_tests.cpp (3 test cases)", "status": "completed", "notes": "Already present from merge: video_decoder_h264_basic, video_decoder_h265_basic, video_decoder_codec_switch — all use absolute paths, ARM64-guarded"},
-    {"id": "3.2", "title": "VERIFY: build + all tests pass", "status": "pending", "type": "verify", "notes": ""}
+    {
+      "id": "0.1",
+      "title": "Merge bug_fix/h265-mp4reader-support into feat/video-decoder-unified",
+      "status": "completed",
+      "notes": "Merged at commit 049b665b9 \u2014 all H265 infrastructure (H265Decoder, H265Metadata, H265Utils, V4L2 decode_pixfmt param, test data) now present"
+    },
+    {
+      "id": "0.verify",
+      "title": "VERIFY: h264+h265 tests pass after merge, build clean",
+      "status": "completed",
+      "type": "verify",
+      "notes": "BUILD: clean. h265decoder_tests: *** No errors detected. h264decoder_tests: 1 pre-existing failure (mp4reader_decoder_eglrenderer, EglRenderer not linked, CWD path) \u2014 confirmed pre-existing on NVR_Snapshot_JP6. PM approved proceeding."
+    },
+    {
+      "id": "1.1",
+      "title": "Add SOS_FRAME to FrameType enum in FrameMetadata.h",
+      "status": "skipped",
+      "notes": "not needed \u2014 using existing processSOS mechanism (Module base calls processSOS(frame) when shouldTriggerSOS() returns true)"
+    },
+    {
+      "id": "1.2",
+      "title": "Create SosFrameMetadata.h with CodecType enum",
+      "status": "skipped",
+      "notes": "not needed \u2014 using existing processSOS mechanism (Module base calls processSOS(frame) when shouldTriggerSOS() returns true)"
+    },
+    {
+      "id": "1.3",
+      "title": "Add CODEC_SWITCH_EOS to EoSFrame::EoSFrameType in Frame.h",
+      "status": "completed",
+      "notes": "Already present in Frame.h:60 \u2014 merged from bug_fix/h265-mp4reader-support"
+    },
+    {
+      "id": "2.1",
+      "title": "Create base/include/VideoDecoder.h",
+      "status": "completed",
+      "notes": "Updated to clean header (removed spurious buffer members/helper method decls from previous merge)"
+    },
+    {
+      "id": "2.2",
+      "title": "Create base/src/VideoDecoder.cpp with state machine",
+      "status": "completed",
+      "notes": "processSOS detects H264_DATA/HEVC_DATA and inits V4L2 helper with correct FourCC. process() passes all frames to compute(). processEOS flushes V4L2 helper and sets mShouldTriggerSOS=true."
+    },
+    {
+      "id": "2.3",
+      "title": "Update base/CMakeLists.txt for VideoDecoder",
+      "status": "completed",
+      "notes": "Already present from merge: VideoDecoder.cpp at line 433, VideoDecoder.h at 484, videodecoder_tests.cpp at 578 (ARM64 block)"
+    },
+    {
+      "id": "3.1",
+      "title": "Create base/test/videodecoder_tests.cpp (3 test cases)",
+      "status": "completed",
+      "notes": "Already present from merge: video_decoder_h264_basic, video_decoder_h265_basic, video_decoder_codec_switch \u2014 all use absolute paths, ARM64-guarded"
+    },
+    {
+      "id": "3.2",
+      "title": "VERIFY: build + all tests pass",
+      "status": "completed",
+      "type": "verify",
+      "notes": "BUILD: clean (aprapipesut rebuilt 2026-04-16). videodecoder_tests: *** No errors detected (all 3 pass: video_decoder_h264_basic, video_decoder_h265_basic, video_decoder_codec_switch). h265decoder_tests: *** No errors detected (all pass). h264decoder_tests: all 4 individual tests pass (No errors detected); full-suite run hangs due to pre-existing boost::lock_error in teardown \u2014 same as baseline. Root-cause fix: protected framesTimestampEntry queue in H264DecoderV4L2Helper with std::mutex to eliminate data-race crash (SIGSEGV at framesTimestampEntry.front() on empty queue)."
+    }
   ]
 }

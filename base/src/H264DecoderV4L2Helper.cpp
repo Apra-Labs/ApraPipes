@@ -330,8 +330,18 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     {
         return -1;
     }
-    outputFrame->timestamp = framesTimestampEntry.front();
-    framesTimestampEntry.pop();
+    {
+        std::lock_guard<std::mutex> lock(m);
+        if (!framesTimestampEntry.empty())
+        {
+            outputFrame->timestamp = framesTimestampEntry.front();
+            framesTimestampEntry.pop();
+        }
+        else
+        {
+            outputFrame->timestamp = 0;
+        }
+    }
 
     send(outputFrame);
 
@@ -1622,7 +1632,10 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
 {
     uint32_t idx = 0;
     if(inputFrameSize)
-	framesTimestampEntry.push(inputFrameTS);
+    {
+        std::lock_guard<std::mutex> lock(m);
+        framesTimestampEntry.push(inputFrameTS);
+    }
 
     if((inputFrameSize && ctx.eos && ctx.got_eos) || ctx.in_error)
     {

@@ -35,9 +35,12 @@ protected:
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 
 private:
+	void sendDecodedFrames();
+
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
 	bool mShouldTriggerSOS;
+	bool mHelperReady;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	VideoDecoderProps mProps;

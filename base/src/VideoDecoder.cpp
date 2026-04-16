@@ -16,6 +16,8 @@
 #include "Logger.h"
 #include "Utils.h"
 #include <linux/videodev2.h>
+#include <deque>
+#include <mutex>
 #ifdef ARM64
 #include "v4l2_nv_extensions.h"
 #endif
@@ -23,7 +25,7 @@
 class VideoDecoder::Detail
 {
 public:
-	Detail() : mWidth(0), mHeight(0)
+	Detail() : mWidth(0), mHeight(0), mCodecPixFmt(0), mNeedsHelperInit(false)
 	{
 	}
 
@@ -32,7 +34,28 @@ public:
 		helper.reset();
 	}
 
-	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame)
+	/* Buffer a decoded frame from the capture thread (thread-safe). */
+	void bufferDecodedFrame(frame_sp& frame)
+	{
+		std::lock_guard<std::mutex> lock(mFramesMutex);
+		mDecodedFrames.push_back(frame);
+	}
+
+	/* Drain all buffered frames (called from module thread). */
+	std::deque<frame_sp> drainDecodedFrames()
+	{
+		std::lock_guard<std::mutex> lock(mFramesMutex);
+		std::deque<frame_sp> out;
+		out.swap(mDecodedFrames);
+		return out;
+	}
+
+	/*
+	 * Parse the metadata and remember codec type + dimensions.
+	 * Does NOT start the decoder helper — call initHelper() from process()
+	 * after the FrameFactory has been rebuilt by the Module framework.
+	 */
+	bool setMetadata(framemetadata_sp& metadata, frame_sp frame)
 	{
 		auto frameType = metadata->getFrameType();
 
@@ -79,12 +102,10 @@ public:
 			}
 
 #ifdef ARM64
-			helper.reset(new h264DecoderV4L2Helper());
-			return helper->init(send, makeFrame, V4L2_PIX_FMT_H264);
-#else
-			helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
-			return helper->init(send, makeFrame);
+			mCodecPixFmt = V4L2_PIX_FMT_H264;
 #endif
+			mNeedsHelperInit = true;
+			return true;
 		}
 		else if (frameType == FrameMetadata::FrameType::HEVC_DATA)
 		{
@@ -97,18 +118,36 @@ public:
 			mWidth = 1920;
 			mHeight = 1080;
 #ifdef ARM64
-			helper.reset(new h264DecoderV4L2Helper());
-			return helper->init(send, makeFrame, V4L2_PIX_FMT_H265);
-#else
-			helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
-			return helper->init(send, makeFrame);
+			mCodecPixFmt = V4L2_PIX_FMT_H265;
 #endif
+			mNeedsHelperInit = true;
+			return true;
 		}
 		else
 		{
 			LOG_ERROR << "VideoDecoder: unsupported frame type " << frameType;
 			return false;
 		}
+	}
+
+	/*
+	 * Called from process() AFTER the FrameFactory has been rebuilt.
+	 * Starts the V4L2 capture thread (or NvCodec helper) and stores the
+	 * send/makeFrame callbacks.
+	 */
+	bool initHelper(std::function<void(frame_sp&)> sendCb, std::function<frame_sp()> makeFrame)
+	{
+		if (!mNeedsHelperInit)
+			return true;
+		mNeedsHelperInit = false;
+
+#ifdef ARM64
+		helper.reset(new h264DecoderV4L2Helper());
+		return helper->init(sendCb, makeFrame, mCodecPixFmt);
+#else
+		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+		return helper->init(sendCb, makeFrame);
+#endif
 	}
 
 	void compute(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS)
@@ -136,13 +175,17 @@ public:
 private:
 #ifdef ARM64
 	boost::shared_ptr<h264DecoderV4L2Helper> helper;
+	uint32_t mCodecPixFmt;
 #else
 	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
 #endif
+	bool mNeedsHelperInit;
+	std::mutex mFramesMutex;
+	std::deque<frame_sp> mDecodedFrames;
 };
 
 VideoDecoder::VideoDecoder(VideoDecoderProps _props)
-	: Module(TRANSFORM, "VideoDecoder", _props), mShouldTriggerSOS(true), mProps(_props)
+	: Module(TRANSFORM, "VideoDecoder", _props), mShouldTriggerSOS(true), mHelperReady(false), mProps(_props)
 {
 	mDetail.reset(new Detail());
 #ifdef ARM64
@@ -214,7 +257,10 @@ bool VideoDecoder::processEOS(string& pinId)
 	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 #endif
+	/* Drain any buffered decoded frames. */
+	sendDecodedFrames();
 	mShouldTriggerSOS = true;
+	mHelperReady = false;
 	return true;
 }
 
@@ -236,19 +282,12 @@ bool VideoDecoder::handleCommand(Command::CommandType type, frame_sp& frame)
 bool VideoDecoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
-	auto ret = mDetail->setMetadata(metadata, frame,
-		[&](frame_sp& outputFrame) {
-			frame_container frames;
-			frames.insert(make_pair(mOutputPinId, outputFrame));
-			Module::send(frames);
-		},
-		[&]() -> frame_sp {
-			return makeFrame();
-		});
+	auto ret = mDetail->setMetadata(metadata, frame);
 
 	if (ret)
 	{
 		mShouldTriggerSOS = false;
+		mHelperReady = false; /* initHelper will be called on the next process() */
 #ifdef ARM64
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		RawImageMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::RGBA, CV_8UC4, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true);
@@ -263,9 +302,44 @@ bool VideoDecoder::processSOS(frame_sp& frame)
 	return ret;
 }
 
+void VideoDecoder::sendDecodedFrames()
+{
+	auto decoded = mDetail->drainDecodedFrames();
+	for (auto& outFrame : decoded)
+	{
+		frame_container frames;
+		frames.insert(make_pair(mOutputPinId, outFrame));
+		Module::send(frames);
+	}
+}
+
 bool VideoDecoder::process(frame_container& frames)
 {
+	/*
+	 * On the first process() call after processSOS(), the Module framework has
+	 * already rebuilt the FrameFactory with the proper DMABUF metadata.
+	 * Only NOW it is safe to start the V4L2 capture thread.
+	 */
+	if (!mHelperReady)
+	{
+		auto sendCb  = [this](frame_sp& f) { mDetail->bufferDecodedFrame(f); };
+		auto makeFrm = [this]() -> frame_sp { return makeFrame(); };
+		if (!mDetail->initHelper(sendCb, makeFrm))
+		{
+			LOG_ERROR << "VideoDecoder: initHelper failed";
+			return false;
+		}
+		mHelperReady = true;
+	}
+
+	/* Drain decoded frames buffered by the capture thread. */
+	sendDecodedFrames();
+
+	/* Feed the current input frame to the decoder. */
 	auto frame = frames.begin()->second;
 	mDetail->compute(frame->data(), frame->size(), frame->timestamp);
+
+	/* Drain again — capture thread may have produced output synchronously. */
+	sendDecodedFrames();
 	return true;
 }
