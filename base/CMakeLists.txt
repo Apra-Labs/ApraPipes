@@ -430,6 +430,7 @@ SET(CUDA_IP_FILES
 	# src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
 	src/H265Decoder.cpp
+	src/VideoDecoder.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -480,6 +481,7 @@ SET(CUDA_IP_FILES_H
 	include/RotateNPPI.h
 	include/H264Decoder.h
 	include/H265Decoder.h
+	include/VideoDecoder.h
 )
 
 IF(ENABLE_ARM64)
@@ -573,6 +575,7 @@ IF (ENABLE_ARM64)
 		# test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
 		test/h265decoder_tests.cpp
+		test/videodecoder_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
