@@ -1,0 +1,17 @@
+{
+  "project": "video-decoder-unified",
+  "branch": "feat/video-decoder-unified",
+  "last_updated": "2026-04-16",
+  "tasks": [
+    {"id": "0.1", "title": "Merge bug_fix/h265-mp4reader-support into feat/video-decoder-unified", "status": "pending", "notes": ""},
+    {"id": "0.verify", "title": "VERIFY: h264+h265 tests pass after merge, build clean", "status": "pending", "type": "verify", "notes": ""},
+    {"id": "1.1", "title": "Add SOS_FRAME to FrameType enum in FrameMetadata.h", "status": "pending", "notes": ""},
+    {"id": "1.2", "title": "Create SosFrameMetadata.h with CodecType enum", "status": "pending", "notes": ""},
+    {"id": "1.3", "title": "Add CODEC_SWITCH_EOS to EoSFrame::EoSFrameType in Frame.h", "status": "pending", "notes": ""},
+    {"id": "2.1", "title": "Create base/include/VideoDecoder.h", "status": "pending", "notes": ""},
+    {"id": "2.2", "title": "Create base/src/VideoDecoder.cpp with state machine", "status": "pending", "notes": ""},
+    {"id": "2.3", "title": "Update base/CMakeLists.txt for VideoDecoder", "status": "pending", "notes": ""},
+    {"id": "3.1", "title": "Create base/test/videodecoder_tests.cpp (3 test cases)", "status": "pending", "notes": ""},
+    {"id": "3.2", "title": "VERIFY: build + all tests pass", "status": "pending", "type": "verify", "notes": ""}
+  ]
+}
