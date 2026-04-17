@@ -56,6 +56,7 @@ public:
 	virtual bool produceFrames(frame_container& frames) = 0;
 	virtual int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame) = 0;
 	virtual int getGop() = 0;
+	virtual int getOpenedCodecType() { return -1; }
 
 	bool Init()
 	{
@@ -600,6 +601,19 @@ public:
 
 		// update metadata
 		setMetadata();
+
+		{
+			int newCodecType = getOpenedCodecType();
+			if (newCodecType != -1 && mLastCodecType != -1 && mLastCodecType != newCodecType)
+			{
+				auto eosFrame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::CODEC_SWITCH_EOS, 0));
+				sendEOS(eosFrame);
+			}
+			if (newCodecType != -1)
+			{
+				mLastCodecType = newCodecType;
+			}
+		}
 
 		// get the end_ts of the video and update the cache
 		uint64_t dummy_start_ts, duration;
@@ -1173,6 +1187,7 @@ protected:
 	framemetadata_sp mH264Metadata;
 	framemetadata_sp mH265Metadata;
 	std::function<void(const APErrorObject& error)> errorCallback;
+	int mLastCodecType = -1;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -1233,6 +1248,7 @@ public:
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame);
 	int getGop();
 	void skipBytes(uint8_t*& buffer);
+	int getOpenedCodecType() override { return FrameMetadata::H264_DATA; }
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
@@ -1259,6 +1275,7 @@ public:
 	void sendEndOfStream();
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame);
 	int getGop();
+	int getOpenedCodecType() override { return FrameMetadata::HEVC_DATA; }
 private:
 	uint8_t* vpsSpsPpsData = nullptr;
 	size_t vpsSpsPpsSize = 0;
