@@ -11,7 +11,7 @@
 #include "NvV4L2Camera.h"
 #include "MemTypeConversion.h"
 #include "ResizeNPPI.h"
-#include "H264Decoder.h"
+#include "VideoDecoder.h"
 #endif
 #include "AffineTransform.h"
 #include "ColorConversionXForm.h"
@@ -133,7 +133,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline() {
   rtspSrc->addOutputPin(meta);
 
   auto Decoder =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(VideoDecoderProps()));
   rtspSrc->setNext(Decoder);
 
   auto colorchange = boost::shared_ptr<ColorConversion>(
@@ -165,9 +165,9 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline1() {
   source->addOutputPin(meta);
 
   // H264DECODER
-  H264DecoderProps decoder_1_Props = H264DecoderProps();
+  VideoDecoderProps decoder_1_Props = VideoDecoderProps();
   auto decoder_1 =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_1_Props));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(decoder_1_Props));
   source->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
   source->setNext(decoder_1);
 
@@ -218,9 +218,9 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline2() {
   source2->addOutputPin(meta2);
 
   // H264DECODER
-  H264DecoderProps decoder_1_Props2 = H264DecoderProps();
+  VideoDecoderProps decoder_1_Props2 = VideoDecoderProps();
   auto decoder_12 =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_1_Props2));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(decoder_1_Props2));
   source2->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
   source2->setNext(decoder_12);
 
@@ -274,9 +274,9 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline3() {
   source3->addOutputPin(meta3);
 
   // H264DECODER
-  H264DecoderProps decoder_3_Props2 = H264DecoderProps();
+  VideoDecoderProps decoder_3_Props2 = VideoDecoderProps();
   auto decoder_13 =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_3_Props2));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(decoder_3_Props2));
   source3->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
   source3->setNext(decoder_13);
 
@@ -330,9 +330,9 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline4() {
   source4->addOutputPin(meta4);
 
   // H264DECODER
-  H264DecoderProps decoder_4_Props2 = H264DecoderProps();
+  VideoDecoderProps decoder_4_Props2 = VideoDecoderProps();
   auto decoder_14 =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_4_Props2));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(decoder_4_Props2));
   source4->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
   source4->setNext(decoder_14);
 
@@ -386,9 +386,9 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline5() {
   source5->addOutputPin(meta5);
 
   // H264DECODER
-  H264DecoderProps decoder_5_Props2 = H264DecoderProps();
+  VideoDecoderProps decoder_5_Props2 = VideoDecoderProps();
   auto decoder_15 =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_5_Props2));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(decoder_5_Props2));
   source5->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
   source5->setNext(decoder_15);
 
@@ -442,9 +442,9 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline6() {
   source6->addOutputPin(meta6);
 
   // H264DECODER
-  H264DecoderProps decoder_6_Props2 = H264DecoderProps();
+  VideoDecoderProps decoder_6_Props2 = VideoDecoderProps();
   auto decoder_16 =
-      boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_6_Props2));
+      boost::shared_ptr<VideoDecoder>(new VideoDecoder(decoder_6_Props2));
   source6->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
   source6->setNext(decoder_16);
 

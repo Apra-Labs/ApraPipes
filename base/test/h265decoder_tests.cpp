@@ -3,7 +3,7 @@
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "Logger.h"
-#include "H265Decoder.h"
+#include "VideoDecoder.h"
 #include "test_utils.h"
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_eglrenderer,* boost::unit_test::disab
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_extsink)
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_statsink)
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -178,8 +178,8 @@ BOOST_AUTO_TEST_CASE(h265_decode_save_jpegs)
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	// H265Decoder on ARM64 outputs RGBA DMABUF
-	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	// VideoDecoder on ARM64 outputs RGBA DMABUF
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(h265_basic_decode_test, *utf::precondition(if_h264_encoder_
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_h265decoder_extSink, *utf::precondition(if_h264_e
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H265Decoder(H265DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::HEVC_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);

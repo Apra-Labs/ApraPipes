@@ -3,7 +3,7 @@
 #include <boost/test/unit_test.hpp>
 #include "RTSPClientSrc.h"
 #include "PipeLine.h"
-#include "H264Decoder.h"
+#include "VideoDecoder.h"
 #include "H264Metadata.h"
 #include "test_utils.h"
 
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(basic_)
 	auto meta = framemetadata_sp(new H264Metadata());
 	m->addOutputPin(meta);
 
-    auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+    auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
     m->setNext(Decoder);
 
     auto m_thumbnailGenerator = boost::shared_ptr<ThumbnailListGenerator>(new ThumbnailListGenerator(ThumbnailListGeneratorProps(180, 180, "./data/thumbnail.jpg")));
