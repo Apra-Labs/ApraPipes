@@ -236,10 +236,13 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
-	// if ((modules[0]->controlModule) != nullptr)
-	// {
-	// 	modules[0]->controlModule->stop();
-	// }
+	// Push EoP into the control module's own queue so its run() loop can exit.
+	// Without this, the control module thread blocks on mQue->pop() forever and
+	// leaks across every pipeline rebuild (camera reconnect, license cycle, etc.).
+	if (!modules.empty() && modules[0]->controlModule != nullptr)
+	{
+		modules[0]->controlModule->stop();
+	}
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
@@ -250,16 +253,21 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		return;
 	}
 
-	// if ((modules[0]->controlModule) != nullptr)
-	// {
-	// 	Module& m = *(modules[0]->controlModule);
-	// 	m.myThread.join();
-	// }
-
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
 		m.myThread.join();
+	}
+
+	// Join the control module thread last. stop() pushed an EoP to its queue,
+	// so its run() loop will have exited by the time we reach here.
+	if (!modules.empty() && modules[0]->controlModule != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		if (m.myThread.joinable())
+		{
+			m.myThread.join();
+		}
 	}
 }
 
@@ -277,11 +285,23 @@ void PipeLine::interrup_wait_for_all()
 		Module& m = *(i->get());
 		m.myThread.interrupt();
 	}
+	if (!modules.empty() && modules[0]->controlModule != nullptr)
+	{
+		modules[0]->controlModule->myThread.interrupt();
+	}
 
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
 		m.myThread.join();
+	}
+	if (!modules.empty() && modules[0]->controlModule != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		if (m.myThread.joinable())
+		{
+			m.myThread.join();
+		}
 	}
 	myStatus = PL_STOPPED;
 }
