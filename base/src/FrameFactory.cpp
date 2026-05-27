@@ -94,6 +94,18 @@ void FrameFactory::destroy(Frame *pointer)
 
 frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<FrameFactory> &mother)
 {
+	// Trim path: produce a new frame_sp that re-uses the existing buffer but
+	// reports a smaller logical size. The previous implementation freed the
+	// tail chunks here (memory_allocator->freeChunks(midPtr, chunksToFree)),
+	// which only worked with boost::pool's chunk-granular bookkeeping. Now
+	// that HostAllocator is backed by std::malloc/std::free we cannot free
+	// a pointer that wasn't returned from malloc, so the original buffer is
+	// retained intact and released as a whole when the new frame's
+	// FrameFactory::destroy() runs.
+	//
+	// The over-allocation cost is bounded: it's the difference between the
+	// reader's pre-allocated "biggerFrameSize" and the actual frame's size,
+	// which is at most one frame's worth per concurrently-live trimmed frame.
 	size_t oldChunks = getNumberOfChunks(frame->size());
 	size_t newChunks = getNumberOfChunks(size);
 	size_t chunksToFree = oldChunks - newChunks;
@@ -112,12 +124,9 @@ frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<Fr
 	boost::mutex::scoped_lock lock(m_mutex);
 	counter.fetch_add(1, memory_order_seq_cst);
 
-	if (chunksToFree > 0)
-	{
-		numberOfChunks.fetch_sub(chunksToFree, memory_order_seq_cst);
-		auto ptr = (void *)((char *)origPtr + (newChunks * memory_allocator->getChunkSize()));
-		memory_allocator->freeChunks(ptr, chunksToFree);
-	}
+	// Intentionally do NOT free the tail chunks. The original buffer stays
+	// fully allocated; FrameFactory::destroy() will free it as one block via
+	// std::free(origPtr) when the trimmed frame is destroyed.
 
 	frame->resetMemory(); // so that when destroyBuffer is called it should not free the memory
 	auto outFrame = frame_sp(
