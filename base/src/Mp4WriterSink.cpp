@@ -157,7 +157,10 @@ public:
   void setProps(Mp4WriterSinkProps &_props) {
     mProps.reset(new Mp4WriterSinkProps(
         _props.chunkTime, _props.syncTimeInSecs, _props.fps, _props.baseFolder,
-        _props.recordedTSBasedDTS, _props.enableMetadata));
+        _props.recordedTSBasedDTS, _props.enableMetadata,
+        _props.useClipExportStrategy, _props.holeGapMultiplier,
+        _props.minHoleGapMs, _props.jitterToleranceMultiplier,
+        _props.gapThresholdMs));
   }
 
   ~DetailAbs(){};
@@ -261,6 +264,27 @@ public:
 
   bool shouldTriggerSOS() { return !mInputMetadata.get(); }
 
+  // Detects a source-side gap on the resumed frame. If the gap from the previous
+  // frame exceeds mProps->gapThresholdMs, closes the current mp4 file and clears
+  // the filename cache so the next write opens a fresh file. Returns true when a
+  // rotation happened. Disabled when gapThresholdMs == 0 (default).
+  bool checkAndHandleGap(uint64_t frameTS) {
+    if (mProps->gapThresholdMs == 0) return false;
+    if (lastFrameTS == 0) return false;
+    if (frameTS <= lastFrameTS) return false;
+    uint64_t gap = frameTS - lastFrameTS;
+    if (gap <= mProps->gapThresholdMs) return false;
+
+    LOG_INFO << "Mp4WriterSink: source gap detected (" << gap
+             << "ms > " << mProps->gapThresholdMs
+             << "ms). Closing current file and rotating.";
+    attemptFileClose();
+    mNextFrameFileName = "";
+    lastFrameTS = 0;
+    mWriterSinkUtils.resetCache();
+    return true;
+  }
+
   void addMetadataInVideoHeader(frame_sp inFrame) {
     if (!lastFrameTS) {
       /* \251sts -> ©sts */
@@ -351,6 +375,7 @@ bool DetailJpeg::write(frame_container &frames) {
     LOG_ERROR << "Image Frame is empty. Unable to write.";
     return true;
   }
+  checkAndHandleGap(inJpegImageFrame->timestamp);
   short naluType = 0;
   std::string _nextFrameFileName;
   mWriterSinkUtils.getFilenameForNextFrame(
@@ -483,6 +508,16 @@ bool DetailH264::write(frame_container &frames) {
     ppsBuffer = ppsBuff;
   }
   auto naluType = H264Utils::getNALUType((char *)mFrameBuffer.data());
+
+  bool gapRotated = checkAndHandleGap(inH264ImageFrame->timestamp);
+  if (gapRotated &&
+      naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE &&
+      naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM) {
+    LOG_TRACE
+        << "Mp4WriterSink: dropping non-IDR frame post-gap, waiting for keyframe";
+    return true;
+  }
+
   std::string _nextFrameFileName;
   mWriterSinkUtils.getFilenameForNextFrame(
       _nextFrameFileName, inH264ImageFrame->timestamp, mProps->baseFolder,
@@ -742,7 +777,12 @@ bool Mp4WriterSink::processEOS(string &pinId) { return true; }
 Mp4WriterSinkProps Mp4WriterSink::getProps() {
   auto tempProps = Mp4WriterSinkProps(
       mDetail->mProps->chunkTime, mDetail->mProps->syncTimeInSecs,
-      mDetail->mProps->fps, mDetail->mProps->baseFolder);
+      mDetail->mProps->fps, mDetail->mProps->baseFolder,
+      mDetail->mProps->recordedTSBasedDTS, mDetail->mProps->enableMetadata,
+      mDetail->mProps->useClipExportStrategy,
+      mDetail->mProps->holeGapMultiplier, mDetail->mProps->minHoleGapMs,
+      mDetail->mProps->jitterToleranceMultiplier,
+      mDetail->mProps->gapThresholdMs);
   fillProps(tempProps);
   return tempProps;
 }
