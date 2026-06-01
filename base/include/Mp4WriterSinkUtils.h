@@ -17,6 +17,7 @@ public:
 	std::string format_hrs(int &hr);
 	std::string format_2(int &min);
 	std::string filePath(boost::filesystem::path relPath, std::string mp4FileName, std::string baseFolder, uint64_t chunkTimeInMins);
+	void resetCache();
 	~Mp4WriterSinkUtils();
 private:
 	int lastVideoMinute=0;

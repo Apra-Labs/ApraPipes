@@ -9,7 +9,7 @@ class DetailH264;
 class Mp4WriterSinkProps : public ModuleProps
 {
 public:
-	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true, bool _enableMetadata = true, bool _useClipExportStrategy = false, int64_t _holeGapMultiplier = 3 , int64_t _minHoleGapMs = 2000, int64_t _jitterToleranceMultiplier = 5)  : ModuleProps()
+	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true, bool _enableMetadata = true, bool _useClipExportStrategy = false, int64_t _holeGapMultiplier = 3 , int64_t _minHoleGapMs = 2000, int64_t _jitterToleranceMultiplier = 5, int64_t _gapThresholdMs = 0)  : ModuleProps()
 	{
 		baseFolder = _baseFolder;
 		fps = _fps;
@@ -19,6 +19,7 @@ public:
 		holeGapMultiplier = _holeGapMultiplier;
 		minHoleGapMs = _minHoleGapMs;
     	jitterToleranceMultiplier = _jitterToleranceMultiplier;
+		gapThresholdMs = _gapThresholdMs;
 		if ((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX))
 		{
 			chunkTime = _chunkTime;
@@ -49,6 +50,7 @@ public:
 		holeGapMultiplier = 3;
 		minHoleGapMs = 2000;
 		jitterToleranceMultiplier = 5;
+		gapThresholdMs = 0;
 	}
 
 	size_t getSerializeSize()
@@ -63,7 +65,8 @@ public:
 			sizeof(useClipExportStrategy) +
 			sizeof(holeGapMultiplier) +
 			sizeof(minHoleGapMs) +
-			sizeof(jitterToleranceMultiplier);
+			sizeof(jitterToleranceMultiplier) +
+			sizeof(gapThresholdMs);
 	}
 
 	std::string baseFolder;
@@ -76,6 +79,7 @@ public:
 	int64_t holeGapMultiplier = 3;
 	int64_t minHoleGapMs = 2000;
 	int64_t jitterToleranceMultiplier = 5;
+	int64_t gapThresholdMs = 0;
 
 private:
 	friend class boost::serialization::access;
@@ -94,6 +98,7 @@ private:
 		ar &holeGapMultiplier;
 		ar &minHoleGapMs;
 		ar &jitterToleranceMultiplier;
+		ar &gapThresholdMs;
 	}
 };
 
