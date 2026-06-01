@@ -248,7 +248,15 @@ void Mp4WriterSinkUtils::getFilenameForNextFrame(std::string& nextFrameFileName 
 	}
 	
 }
-
+void Mp4WriterSinkUtils::resetCache()
+{
+    lastVideoTS = 0;
+    lastVideoMinute = 0;
+    lastVideoName.clear();
+    currentFolder.clear();
+    lastVideoFolderPath.clear();
+    tempNextFrameFileName.clear();
+}
 Mp4WriterSinkUtils::~Mp4WriterSinkUtils()
 {
 }
