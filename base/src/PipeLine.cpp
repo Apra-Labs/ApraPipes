@@ -228,6 +228,12 @@ void PipeLine::stop()
 		return;
 	}
 	myStatus = PL_STOPPING;
+	
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		LOG_INFO<<"stopping control module";
+		modules[0]->controlModule->stop();
+	}
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		if (i->get()->getNature() == Module::SOURCE)
@@ -236,10 +242,6 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
-	// if ((modules[0]->controlModule) != nullptr)
-	// {
-	// 	modules[0]->controlModule->stop();
-	// }
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
@@ -250,17 +252,26 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		return;
 	}
 
-	// if ((modules[0]->controlModule) != nullptr)
-	// {
-	// 	Module& m = *(modules[0]->controlModule);
-	// 	m.myThread.join();
-	// }
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		if (m.myThread.joinable())
+		{
+			LOG_INFO<<"joining control module thread";
+			m.myThread.join();
+		}
+	}
 
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
-		m.myThread.join();
+		if (m.myThread.joinable())
+		{
+			LOG_INFO<<"joining other modules thread";
+			m.myThread.join();
+		}
 	}
+	
 }
 
 
