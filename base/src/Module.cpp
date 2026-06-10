@@ -1586,6 +1586,14 @@ bool Module::addEoPFrame(frame_container &frames)
       frames.insert(make_pair(me.first, frame));
     }
   }
+
+  if (myNature == CONTROL && frames.empty())
+    {
+      framemetadata_sp eopMetadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+      auto eopFrame = frame_sp(new EoPFrame());
+      eopFrame->setMetadata(eopMetadata);
+      frames.insert(make_pair("eop", eopFrame));
+    }
   return true;
 }
 
@@ -1598,12 +1606,14 @@ bool Module::handleStop()
     return true;
   }
   mStopCount++;
-  if (myNature != SOURCE && mStopCount != mForwardPins)
+  
+  if (myNature != SOURCE && myNature != CONTROL && mStopCount != mForwardPins)
   {
     return true;
   }
-  if (myNature != SINK)
+  if (myNature != SINK && myNature != CONTROL)
   {
+     LOG_INFO<<"handle stop sending EOP frame";
     sendEoPFrame();
   }
   mRunning = false;
