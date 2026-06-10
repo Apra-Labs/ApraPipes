@@ -1590,6 +1590,7 @@ bool Module::addEoPFrame(frame_container &frames)
   if (myNature == CONTROL && frames.empty())
     {
       framemetadata_sp eopMetadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+      auto eopFrame = frame_sp(new EoPFrame());
       eopFrame->setMetadata(eopMetadata);
       frames.insert(make_pair("eop", eopFrame));
     }
