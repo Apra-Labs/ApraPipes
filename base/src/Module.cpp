@@ -1589,10 +1589,11 @@ bool Module::addEoPFrame(frame_container &frames)
 
   if (myNature == CONTROL && frames.empty())
     {
+      LOG_TRACE<<"creating and sending EOP for control module";
       framemetadata_sp eopMetadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-      auto eopFrame = frame_sp(new EoPFrame());
-      eopFrame->setMetadata(eopMetadata);
-      frames.insert(make_pair("eop", eopFrame));
+      auto frame = frame_sp(new EoPFrame());
+      frame->setMetadata(eopMetadata);
+      frames.insert(make_pair("eop", frame));
     }
   return true;
 }
@@ -1609,14 +1610,13 @@ bool Module::handleStop()
   
   if (myNature != SOURCE && myNature != CONTROL && mStopCount != mForwardPins)
   {
-    LOG_INFO<<"handlestop early return";
+    LOG_TRACE<<"handlestop early return";
     return true;
   }
   if (myNature != SINK && myNature != CONTROL)
   {
-     LOG_INFO<<"hadnle stop sending EOP frame";
-    sendEoPFrame();
-    LOG_INFO<<"hadnle stop sent EOP frame";
+     LOG_TRACE<<"handle stop sending EOP frame";
+     sendEoPFrame();
   }
   mRunning = false;
   // if pull and not source - call term
