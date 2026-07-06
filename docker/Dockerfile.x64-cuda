@@ -86,16 +86,26 @@ RUN set -eux; \
     gcc -shared -fPIC -Wl,-soname,libnvidia-encode.so.1 -o "$dst/libnvidia-encode.so" /tmp/nvenc.c; \
     nvcc --version
 
+# ApraPipes sets cmake_minimum_required(3.29) -> policy CMP0146 becomes NEW and
+# disables the classic FindCUDA module that OpenCV's config file still uses.
+# Force it OLD so find_package(CUDA) resolves via the module.
+RUN sed -i '/project(APRAPIPES)/a cmake_policy(SET CMP0146 OLD)' base/CMakeLists.txt
+
 # ---- vcpkg bootstrap + configure + build ------------------------------------
 RUN ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
+# Configure (vcpkg installs all deps here). Retry to ride out transient
+# GitHub download rate-limits (HTTP 429); the vcpkg cache accumulates each try.
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
-    cmake -B _build -S base -G Ninja \
-      -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -DENABLE_CUDA=ON -DENABLE_LINUX=ON -DENABLE_WINDOWS=OFF -DENABLE_ARM64=OFF \
-      -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" \
-    || { echo '===== libxcrypt autoconf-err ====='; tail -n 60 /src/vcpkg/buildtrees/libxcrypt/autoconf-x64-linux-err.log 2>/dev/null; exit 1; }
+    for i in 1 2 3 4 5 6; do \
+      cmake -B _build -S base -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DENABLE_CUDA=ON -DENABLE_LINUX=ON -DENABLE_WINDOWS=OFF -DENABLE_ARM64=OFF \
+        -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" && break; \
+      echo "### configure attempt $i failed; retry in 30s ###"; sleep 30; \
+    done; \
+    test -f _build/build.ninja
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     cmake --build _build -j "${JOBS}" \
     && cmake --install _build --prefix /opt/aprapipes \

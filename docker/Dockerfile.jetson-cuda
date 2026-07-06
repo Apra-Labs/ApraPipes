@@ -69,17 +69,30 @@ COPY . /src
 
 RUN test -d /usr/local/cuda/include && nvcc --version   # prove CUDA is in-image
 
+# ApraPipes sets cmake_minimum_required(3.29) -> policy CMP0146 becomes NEW and
+# disables the classic FindCUDA module that OpenCV's config file still uses.
+# Force it OLD so find_package(CUDA) resolves via the module.
+RUN sed -i '/project(APRAPIPES)/a cmake_policy(SET CMP0146 OLD)' base/CMakeLists.txt
+
 # ---- vcpkg bootstrap + configure + build (ARM64 / Jetson path) --------------
 RUN ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
+# Configure (vcpkg installs all deps here). Retry to ride out transient GitHub
+# download rate-limits (HTTP 429) that hit boost's many small fetches; the vcpkg
+# cache accumulates downloads each attempt, so it converges.
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
-    export VCPKG_OVERLAY_PORTS=/src/thirdparty/custom-overlay \
-    && cmake -B _build -S base -G Ninja \
-      -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -DENABLE_ARM64=ON -DENABLE_WINDOWS=OFF \
-      -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" \
-    && cmake --build _build -j "$(nproc)" \
+    export VCPKG_OVERLAY_PORTS=/src/thirdparty/custom-overlay; \
+    for i in 1 2 3 4 5 6 7 8; do \
+      cmake -B _build -S base -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DENABLE_ARM64=ON -DENABLE_WINDOWS=OFF \
+        -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" && break; \
+      echo "### configure attempt $i failed (transient GitHub 429?); retry in 30s ###"; sleep 30; \
+    done; \
+    test -f _build/build.ninja
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    cmake --build _build -j "$(nproc)" \
     && cmake --install _build --prefix /opt/aprapipes \
     && cp _build/aprapipesut /opt/aprapipes/bin/ \
     && ( strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true )
