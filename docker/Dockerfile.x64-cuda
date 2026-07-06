@@ -35,7 +35,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
       ca-certificates curl wget zip unzip tar git git-lfs jq \
       autoconf automake autopoint autoconf-archive gettext build-essential libtool pkg-config \
       flex bison gperf nasm yasm texinfo \
-      ninja-build python3 python3-pip python3-jinja2 \
+      ninja-build python3 python3-pip python3-jinja2 nlohmann-json3-dev \
       libass-dev libfreetype6-dev libgnutls28-dev libmp3lame-dev libsdl2-dev \
       libssl-dev libsoup-gnome2.4-dev libncurses5-dev libva-dev libvdpau-dev \
       libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev libxdamage-dev \
