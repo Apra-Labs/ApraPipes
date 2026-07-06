@@ -82,7 +82,7 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
     && cmake --build _build -j "$(nproc)" \
     && cmake --install _build --prefix /opt/aprapipes \
     && cp _build/aprapipesut /opt/aprapipes/bin/ \
-    && strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true
+    && ( strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true )
 
 ########################  Stage 2: slim runtime  ##############################
 # l4t-cuda runtime keeps CUDA runtime in-image but drops the toolkit/compilers.
