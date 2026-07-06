@@ -110,6 +110,7 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     cmake --build _build -j "${JOBS}" \
     && cmake --install _build --prefix /opt/aprapipes \
+    && mkdir -p /opt/aprapipes/bin \
     && cp _build/aprapipesut /opt/aprapipes/bin/ \
     && ( strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true )
 
