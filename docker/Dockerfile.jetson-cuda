@@ -1,0 +1,111 @@
+###############################################################################
+# ApraPipes — Jetson (ARM64 / L4T) CUDA build image  (multi-stage, slim output)
+#
+#   * CUDA / cuDNN / TensorRT + Jetson Multimedia API come from the L4T JetPack
+#     base image — they live INSIDE the image, not mounted from the host.
+#   * Uses the repo's ENABLE_ARM64 (Jetson) code path.
+#
+# NOTE ON "CUDA 11.8": On Jetson the CUDA version is tied to the L4T/JetPack
+# release. JetPack 5.1.x (l4t r35.x, used below) bundles **CUDA 11.4**, which is
+# the closest in-image CUDA to 11.8 available for Jetson. There is no L4T base
+# image with CUDA 11.8. If your board runs a newer JetPack, bump BASE_IMAGE
+# (e.g. JetPack 6 / l4t r36 ships CUDA 12.x). Pick the tag that matches the
+# L4T version flashed on the target board.
+#
+# Building ARM64 on an x86 host requires QEMU emulation and is VERY slow
+# (hours). Prefer building natively on a Jetson, or with buildx + qemu:
+#   docker buildx build --platform linux/arm64 \
+#     -f docker/Dockerfile.jetson-cuda -t aprapipes:jetson-cuda --load .
+#
+# Run on the Jetson (needs NVIDIA Container Toolkit / nvidia runtime):
+#   docker run --rm --runtime nvidia aprapipes:jetson-cuda aprapipesut --list_content
+###############################################################################
+
+# JetPack 5.1.2 (L4T r35.4.1): CUDA 11.4, cuDNN 8.6, TensorRT 8.5, MM API — all in-image.
+ARG BASE_IMAGE=nvcr.io/nvidia/l4t-jetpack:r35.4.1
+
+########################  Stage 1: builder  ###################################
+FROM ${BASE_IMAGE} AS builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+# Jetson SM archs: Xavier=72, Orin=87, TX2=62, Nano=53. Default covers Xavier+Orin.
+ARG CUDA_ARCH="72;87"
+ARG BUILD_TYPE=RelWithDebInfo
+
+# vcpkg must use system-installed tools on ARM (it can't build its own here).
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1 \
+    PATH=/usr/local/cuda/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu/tegra:${LD_LIBRARY_PATH}
+
+# ---- system build dependencies (jetson deps + X/GL libs the full build needs) ----
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+      ca-certificates curl wget zip unzip tar git git-lfs jq \
+      autoconf automake autopoint autoconf-archive gettext build-essential libtool pkg-config \
+      flex bison gperf nasm yasm texinfo \
+      ninja-build python3 python3-pip python3-jinja2 \
+      libssl-dev libudev-dev libncurses5-dev nlohmann-json3-dev \
+      libxinerama-dev libxcursor-dev libxrandr-dev libxi-dev xorg-dev \
+      libgl1-mesa-dev libgles2-mesa-dev libglu1-mesa-dev mesa-common-dev \
+      doxygen graphviz \
+    && rm -rf /var/lib/apt/lists/*
+
+# CMake 3.29–3.x (NOT 4.x): OpenCV's config calls the classic find_package(CUDA),
+# which needs the FindCUDA.cmake module that CMake 4.0 removed. Pin below 4.
+RUN pip3 install --no-cache-dir "cmake>=3.29,<4" meson
+
+# libtool 2.4.7 from source. L4T r35 (Ubuntu 20.04) ships 2.4.6, which lacks the
+# LT_SYS_SYMBOL_USCORE m4 macro that libxcrypt 4.4.36's configure.ac requires;
+# without it vcpkg's `autoreconf -vfi` fails. Installing to /usr overrides the
+# system libtool so aclocal/autoreconf pick up the macro.
+RUN cd /tmp && ( curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused -o libtool-2.4.7.tar.gz https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.gz \
+      || curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused -o libtool-2.4.7.tar.gz https://ftpmirror.gnu.org/libtool/libtool-2.4.7.tar.gz ) \
+    && tar xf libtool-2.4.7.tar.gz && cd libtool-2.4.7 \
+    && ./configure --prefix=/usr >/dev/null \
+    && make -j"$(nproc)" >/dev/null && make install >/dev/null \
+    && cd / && rm -rf /tmp/libtool-2.4.7* && libtool --version | head -1
+
+WORKDIR /src
+COPY . /src
+
+RUN test -d /usr/local/cuda/include && nvcc --version   # prove CUDA is in-image
+
+# ---- vcpkg bootstrap + configure + build (ARM64 / Jetson path) --------------
+RUN ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    export VCPKG_OVERLAY_PORTS=/src/thirdparty/custom-overlay \
+    && cmake -B _build -S base -G Ninja \
+      -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DENABLE_ARM64=ON -DENABLE_WINDOWS=OFF \
+      -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" \
+    && cmake --build _build -j "$(nproc)" \
+    && cmake --install _build --prefix /opt/aprapipes \
+    && cp _build/aprapipesut /opt/aprapipes/bin/ \
+    && strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true
+
+########################  Stage 2: slim runtime  ##############################
+# l4t-cuda runtime keeps CUDA runtime in-image but drops the toolkit/compilers.
+# cuDNN + tegra multimedia libs are copied from the builder so we don't depend
+# on host mounts for them.
+FROM nvcr.io/nvidia/l4t-cuda:11.4.19-runtime AS runtime
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+      libssl1.1 libncurses6 zlib1g \
+      libgl1 libglu1-mesa libgles2 libx11-6 libxext6 libxrender1 \
+      libxrandr2 libxinerama1 libxcursor1 libxi6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# cuDNN runtime libs (not present in l4t-cuda) — bring them from the JetPack builder.
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libcudnn*.so* /usr/lib/aarch64-linux-gnu/
+
+COPY --from=builder /opt/aprapipes /opt/aprapipes
+ENV PATH=/opt/aprapipes/bin:${PATH}
+
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,graphics
+
+WORKDIR /opt/aprapipes
+CMD ["bash"]

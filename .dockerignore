@@ -1,0 +1,28 @@
+# Keep the Docker build context small & fast.
+# We need: base/, thirdparty/, build_scripts/, checkProc.sh and the vcpkg
+# submodule SOURCE (scripts/ports) — but NOT its multi-GB build artifacts.
+
+.git
+.github
+.vscode
+
+# Local build trees (regenerated inside the image)
+_build
+_debugbuild
+build
+
+# Big/unneeded-at-build-time assets
+data
+docs
+Testing
+Doxyfile
+
+# vcpkg heavy artifacts (source is kept, these are regenerated)
+vcpkg/buildtrees
+vcpkg/downloads
+vcpkg/packages
+vcpkg/installed
+
+# misc
+**/.DS_Store
+*.log

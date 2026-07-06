@@ -1,0 +1,131 @@
+###############################################################################
+# ApraPipes — Linux x86_64 + CUDA 11.8 build image  (multi-stage, slim output)
+#
+#   * CUDA/cuDNN come from the NVIDIA base image (in the image, NOT your host).
+#   * Stage 1 compiles everything with the in-image nvcc.
+#   * Stage 2 is a slim CUDA *runtime* image carrying only the built artifacts.
+#
+# Build (from the repo root so the context includes base/, vcpkg/, thirdparty/):
+#   docker build -f docker/Dockerfile.x64-cuda -t aprapipes:x64-cuda11.8 .
+#
+# Run (needs the NVIDIA Container Toolkit on the host to expose the GPU):
+#   docker run --rm --gpus all aprapipes:x64-cuda11.8 aprapipesut --list_content
+###############################################################################
+
+########################  Stage 1: builder  ###################################
+# -devel gives us nvcc + headers; -cudnn8 bundles cuDNN 8 — all inside the image.
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 AS builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+# Which SM architectures to generate. Fewer arches => smaller/faster build.
+# Repo default is "52;60;70;75"; add 80;86;89 for Ampere/Ada if you need them.
+ARG CUDA_ARCH="52;60;70;75"
+ARG BUILD_TYPE=RelWithDebInfo
+# Parallel compile jobs for the ApraPipes build step.
+ARG JOBS=16
+
+ENV PATH=/usr/local/cuda/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH} \
+    # let gcc find the CUDA toolkit libs (libcudart_static.a, nppi*, nvjpeg…)
+    # and the driver stubs (libcuda.so) purely from the image:
+    LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64
+
+# ---- system build dependencies (mirrors build_scripts/build_dependencies_linux_cuda.sh) ----
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+      ca-certificates curl wget zip unzip tar git git-lfs jq \
+      autoconf automake autopoint autoconf-archive gettext build-essential libtool pkg-config \
+      flex bison gperf nasm yasm texinfo \
+      ninja-build python3 python3-pip python3-jinja2 \
+      libass-dev libfreetype6-dev libgnutls28-dev libmp3lame-dev libsdl2-dev \
+      libssl-dev libsoup-gnome2.4-dev libncurses5-dev libva-dev libvdpau-dev \
+      libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev libxdamage-dev \
+      libxcursor-dev libxinerama-dev libx11-dev libxi-dev libxrandr-dev \
+      libxxf86vm-dev libxtst-dev libgl1-mesa-dev libgles2-mesa-dev libglu1-mesa-dev \
+      mesa-common-dev libudev-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# CMake 3.29–3.x (NOT 4.x): OpenCV's config calls the classic find_package(CUDA),
+# which needs the FindCUDA.cmake module that CMake 4.0 removed. Pin below 4.
+RUN pip3 install --no-cache-dir "cmake>=3.29,<4" meson
+
+# libtool 2.4.7 from source. Ubuntu 20.04 ships 2.4.6, which lacks the
+# LT_SYS_SYMBOL_USCORE m4 macro that libxcrypt 4.4.36's configure.ac requires;
+# without it vcpkg's `autoreconf -vfi` fails. Installing to /usr overrides the
+# system libtool so aclocal/autoreconf pick up the macro.
+RUN cd /tmp && ( curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused -o libtool-2.4.7.tar.gz https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.gz \
+      || curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused -o libtool-2.4.7.tar.gz https://ftpmirror.gnu.org/libtool/libtool-2.4.7.tar.gz ) \
+    && tar xf libtool-2.4.7.tar.gz && cd libtool-2.4.7 \
+    && ./configure --prefix=/usr >/dev/null \
+    && make -j"$(nproc)" >/dev/null && make install >/dev/null \
+    && cd / && rm -rf /tmp/libtool-2.4.7* && libtool --version | head -1
+
+# The custom cudnn vcpkg port only searches aarch64 lib paths, not
+# x86_64-linux-gnu where the base image's cuDNN 8 lives. Point the port at it
+# (its documented CUDNN_ROOT_DIR hook) + a /usr/lib symlink as a guaranteed
+# fallback for find_library.
+ENV CUDNN_ROOT_DIR=/usr/lib/x86_64-linux-gnu
+RUN for f in /usr/lib/x86_64-linux-gnu/libcudnn*.so; do ln -sf "$f" /usr/lib/; done
+
+WORKDIR /src
+COPY . /src
+
+# ---- Link-time stubs for the NVIDIA driver video libs -----------------------
+# aprapipes links libnvcuvid.so / libnvidia-encode.so (NVDEC/NVENC). These ship
+# with the *driver*, not the CUDA toolkit, so they are absent at build time.
+# We synthesise stub .so's (correct SONAMEs, exported symbols pulled straight
+# from the vendored Video Codec SDK headers) purely to satisfy the linker.
+# At runtime the REAL libraries are injected by the NVIDIA Container Toolkit.
+RUN set -eux; \
+    SDK=/src/thirdparty/Video_Codec_SDK_10.0.26/Interface; \
+    dst=/usr/lib/x86_64-linux-gnu; \
+    grep -hoE '\bcuvid[A-Za-z0-9_]+[[:space:]]*\(' "$SDK"/*.h | sed -E 's/[[:space:]]*\(//' | sort -u \
+      | awk '{print "void "$1"(void){}"}' > /tmp/nvcuvid.c; \
+    grep -hoE '\bNvEncodeAPI[A-Za-z0-9_]+[[:space:]]*\(' "$SDK"/*.h | sed -E 's/[[:space:]]*\(//' | sort -u \
+      | awk '{print "void "$1"(void){}"}' > /tmp/nvenc.c; \
+    gcc -shared -fPIC -Wl,-soname,libnvcuvid.so.1      -o "$dst/libnvcuvid.so"      /tmp/nvcuvid.c; \
+    gcc -shared -fPIC -Wl,-soname,libnvidia-encode.so.1 -o "$dst/libnvidia-encode.so" /tmp/nvenc.c; \
+    nvcc --version
+
+# ---- vcpkg bootstrap + configure + build ------------------------------------
+RUN ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    cmake -B _build -S base -G Ninja \
+      -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DENABLE_CUDA=ON -DENABLE_LINUX=ON -DENABLE_WINDOWS=OFF -DENABLE_ARM64=OFF \
+      -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" \
+    || { echo '===== libxcrypt autoconf-err ====='; tail -n 60 /src/vcpkg/buildtrees/libxcrypt/autoconf-x64-linux-err.log 2>/dev/null; exit 1; }
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    cmake --build _build -j "${JOBS}" \
+    && cmake --install _build --prefix /opt/aprapipes \
+    && cp _build/aprapipesut /opt/aprapipes/bin/ \
+    && ( strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true )
+
+########################  Stage 2: slim runtime  ##############################
+# Runtime flavour of the same CUDA/cuDNN — no compilers, no toolkit dev files.
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04 AS runtime
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Only the shared libs aprapipesut loads at runtime (vcpkg deps are static, so
+# this is the small dynamic tail: GTK/X11/GL/ncurses/…). Trim with `ldd` after
+# a first run if you want it even lighter.
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+      libgtk-3-0 libgdk-pixbuf2.0-0 libglib2.0-0 libgomp1 \
+      libx11-6 libxext6 libxrender1 libxrandr2 libxinerama1 libxcursor1 libxi6 \
+      libxfixes3 libxdamage1 libxcb1 libsm6 libice6 \
+      libgl1 libglu1-mesa libglvnd0 libgles2 \
+      libncurses6 libfreetype6 libssl1.1 zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+# Built library + headers + cmake config + the test executable.
+COPY --from=builder /opt/aprapipes /opt/aprapipes
+ENV PATH=/opt/aprapipes/bin:${PATH}
+
+# Ask the NVIDIA Container Toolkit to expose GPU + NVDEC/NVENC + compute at run.
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,graphics
+
+WORKDIR /opt/aprapipes
+CMD ["bash"]
