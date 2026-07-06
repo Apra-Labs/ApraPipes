@@ -49,9 +49,11 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
       doxygen graphviz \
     && rm -rf /var/lib/apt/lists/*
 
-# CMake 3.29–3.x (NOT 4.x): OpenCV's config calls the classic find_package(CUDA),
-# which needs the FindCUDA.cmake module that CMake 4.0 removed. Pin below 4.
-RUN pip3 install --no-cache-dir "cmake>=3.29,<4" meson
+# CMake 3.26 (pre-3.27): OpenCV's config calls the classic find_package(CUDA).
+# CMake >=3.27 introduces policy CMP0146 which DISABLES the FindCUDA module (and
+# 4.0 removed it entirely), breaking OpenCV+CUDA. 3.26 has no CMP0146, so the
+# module is always available. (cmake_minimum_required is lowered to match below.)
+RUN pip3 install --no-cache-dir "cmake==3.26.*" meson
 
 # libtool 2.4.7 from source. L4T r35 (Ubuntu 20.04) ships 2.4.6, which lacks the
 # LT_SYS_SYMBOL_USCORE m4 macro that libxcrypt 4.4.36's configure.ac requires;
@@ -69,10 +71,9 @@ COPY . /src
 
 RUN test -d /usr/local/cuda/include && nvcc --version   # prove CUDA is in-image
 
-# ApraPipes sets cmake_minimum_required(3.29) -> policy CMP0146 becomes NEW and
-# disables the classic FindCUDA module that OpenCV's config file still uses.
-# Force it OLD so find_package(CUDA) resolves via the module.
-RUN sed -i '/project(APRAPIPES)/a cmake_policy(SET CMP0146 OLD)' base/CMakeLists.txt
+# Lower cmake_minimum_required to 3.26 so cmake 3.26 (no CMP0146) is accepted;
+# this keeps OpenCV's find_package(CUDA) working via the FindCUDA module.
+RUN sed -i 's/cmake_minimum_required(VERSION 3\.29)/cmake_minimum_required(VERSION 3.26)/' base/CMakeLists.txt
 
 # ---- vcpkg bootstrap + configure + build (ARM64 / Jetson path) --------------
 RUN ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
