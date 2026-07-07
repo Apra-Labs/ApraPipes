@@ -78,6 +78,16 @@ RUN sed -i 's/cmake_minimum_required(VERSION 3\.29)/cmake_minimum_required(VERSI
 # ---- vcpkg bootstrap + configure + build (ARM64 / Jetson path) --------------
 RUN ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
+# L4T tegra libraries + Jetson Multimedia API are injected by the NVIDIA runtime
+# at run time and are ABSENT during a BuildKit build, so the ARM64 find_library()
+# calls (nvjpeg, nvv4l2, nvbuf_utils, nveglstream_camconsumer, nvargus_socketclient)
+# fail. Stage them from the build host into the image. (See docker/README —
+# these dirs are copied from /usr/lib/aarch64-linux-gnu/tegra and
+# /usr/src/jetson_multimedia_api on the Jetson before building.)
+COPY _jetson_tegra/ /usr/lib/aarch64-linux-gnu/tegra/
+COPY _jetson_mmapi/ /usr/src/jetson_multimedia_api/
+RUN echo /usr/lib/aarch64-linux-gnu/tegra > /etc/ld.so.conf.d/nvidia-tegra.conf && ldconfig
+
 # Configure (vcpkg installs all deps here). Retry to ride out transient GitHub
 # download rate-limits (HTTP 429) that hit boost's many small fetches; the vcpkg
 # cache accumulates downloads each attempt, so it converges.
@@ -116,8 +126,13 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
 # cuDNN runtime libs (not present in l4t-cuda) — bring them from the JetPack builder.
 COPY --from=builder /usr/lib/aarch64-linux-gnu/libcudnn*.so* /usr/lib/aarch64-linux-gnu/
 
+# L4T tegra libs the binary links against (nvjpeg, nvv4l2, ...) — from the builder.
+COPY --from=builder /usr/lib/aarch64-linux-gnu/tegra /usr/lib/aarch64-linux-gnu/tegra
+RUN echo /usr/lib/aarch64-linux-gnu/tegra > /etc/ld.so.conf.d/nvidia-tegra.conf && ldconfig
+
 COPY --from=builder /opt/aprapipes /opt/aprapipes
-ENV PATH=/opt/aprapipes/bin:${PATH}
+ENV PATH=/opt/aprapipes/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra:${LD_LIBRARY_PATH}
 
 ENV NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,graphics

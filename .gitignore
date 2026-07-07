@@ -5,3 +5,7 @@ thirdparty/gst-build/gst-build-1.16
 base/vcpkg_installed
 base/vcpkg.json
 CI_test_result*.xml
+
+# Jetson host L4T libs staged into the build context (not committed)
+_jetson_tegra/
+_jetson_mmapi/
