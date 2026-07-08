@@ -34,7 +34,16 @@ public:
 			if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
 			{
 				sps_pps_properties p;
-				H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
+				// Only an SPS NAL (type 7) carries a parseable SPS. An IDR slice
+				// (type 5) is picture data; feeding it to parse_sps runs the SPS
+				// bit-reader past the buffer (previously: assert -> abort()). Parse
+				// only for SPS. For an IDR-first stream, p keeps its safe defaults
+				// and NVDEC derives the real dimensions from the bitstream in
+				// HandleVideoSequence.
+				if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+				{
+					H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
+				}
 				mWidth = p.width;
 				mHeight = p.height;
 

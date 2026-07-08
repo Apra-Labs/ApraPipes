@@ -20,11 +20,11 @@ struct sps_pps_properties {
 class SpsPpsParsser{
 public:
 	SpsPpsParsser() {}
-	void ParseSps(const unsigned char * pStart, unsigned short nLen, sps_pps_properties *output);
-	void ParsePps(const unsigned char * pStart, unsigned short nLen, sps_pps_properties *output);
+	void ParseSps(const unsigned char * pStart, size_t nLen, sps_pps_properties *output);
+	void ParsePps(const unsigned char * pStart, size_t nLen, sps_pps_properties *output);
 private:
 	const unsigned char * m_pStart;
-	unsigned short m_nLength;
+	size_t m_nLength;
 	int m_nCurrentBit;
 private:
 	unsigned int ReadBit();

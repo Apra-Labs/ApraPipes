@@ -8,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <iostream>
+#include <stdexcept>
 
 #include "Logger.h"
 
@@ -17,7 +18,14 @@ using namespace std;
 
 unsigned int SpsPpsParsser::ReadBit()
 {
-	assert(m_nCurrentBit <= m_nLength * 8);
+	// Guard against reading past the end of the buffer. This used to be an
+	// assert(), which calls abort() on a malformed/short SPS and takes down the
+	// whole process (it is NOT catchable by parse_sps's try/catch). Throwing
+	// instead lets parse_sps catch it, log, and fall back to default
+	// sps_pps_properties. Malformed input reaches here e.g. when an IDR slice is
+	// mistakenly parsed as an SPS.
+	if (m_nCurrentBit >= m_nLength * 8)
+		throw std::out_of_range("SpsPpsParsser::ReadBit: read past end of SPS buffer");
 	int nIndex = m_nCurrentBit / 8;
 	int nOffset = m_nCurrentBit % 8 + 1;
 
@@ -65,7 +73,7 @@ unsigned int SpsPpsParsser::ReadSE()
 	return r;
 }
 
-void SpsPpsParsser::ParseSps(const unsigned char * pStart, unsigned short nLen, sps_pps_properties *output)
+void SpsPpsParsser::ParseSps(const unsigned char * pStart, size_t nLen, sps_pps_properties *output)
 {
 	LOG_TRACE << "ParseSps Len:" << nLen;
 	m_pStart = pStart;
@@ -179,7 +187,7 @@ void SpsPpsParsser::ParseSps(const unsigned char * pStart, unsigned short nLen, 
 	LOG_TRACE << "ParseSps Done W:" << Width <<" H:"<< Height;
 }
 
-void SpsPpsParsser::ParsePps(const unsigned char * pStart, unsigned short nLen, sps_pps_properties *output) {
+void SpsPpsParsser::ParsePps(const unsigned char * pStart, size_t nLen, sps_pps_properties *output) {
 
 }
 
