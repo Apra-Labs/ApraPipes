@@ -234,7 +234,7 @@ class H264DecoderNvCodecHelper : public NvDecoder
 public:
     H264DecoderNvCodecHelper(int mWidth, int mHieght);
     H264DecoderNvCodecHelper() {}
-    ~H264DecoderNvCodecHelper() {}
+    ~H264DecoderNvCodecHelper();
 
     bool init(std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame);
     void ConvertToPlanar(uint8_t* pHostFrame, int nWidth, int nHeight, int nBitDepth);

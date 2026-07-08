@@ -706,6 +706,35 @@ H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
 }
 
+H264DecoderNvCodecHelper::~H264DecoderNvCodecHelper()
+{
+	// The constructor creates a dedicated CUDA context per decoder via
+	// cuCtxCreate but nothing ever released it. Each decoder instance
+	// (i.e. every snapshot / decode session) therefore leaked a full CUDA
+	// context, which pins both device VRAM and host-side driver/pinned
+	// allocations. Under sustained load the GPU (and host RAM) climb until
+	// cuCtxCreate / cuvidCreateDecoder fails inside libcuda and the process
+	// SIGSEGVs (observed at ~150 sessions on an 8 GB card). Destroy the
+	// context here so device + host memory are reclaimed per session.
+	CUcontext cuContext = NULL;
+	if (helper)
+	{
+		cuContext = helper->GetContext();
+		// Tear down the NvDecoder first: ~NvDecoder runs cuvidDestroyDecoder /
+		// cuvidDestroyVideoParser and frees the host frame buffers, and must
+		// do so while its context is still valid.
+		helper.reset();
+	}
+	if (cuContext)
+	{
+		// Raw driver call (no ck()/throw) - destructors must not throw, and a
+		// failure here is non-fatal (context may already be gone).
+		CUresult ctxDestroyStatus = cuCtxDestroy(cuContext);
+		if (ctxDestroyStatus != CUDA_SUCCESS)
+			LOG_ERROR << "cuCtxDestroy failed in ~H264DecoderNvCodecHelper: " << ctxDestroyStatus;
+	}
+}
+
 bool H264DecoderNvCodecHelper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)
 {
 	makeFrame = _makeFrame;

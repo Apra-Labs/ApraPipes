@@ -112,11 +112,20 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
     && cmake --install _build --prefix /opt/aprapipes \
     && mkdir -p /opt/aprapipes/bin \
     && cp _build/aprapipesut /opt/aprapipes/bin/ \
-    && ( strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true )
+    && ( strip --strip-unneeded /opt/aprapipes/bin/aprapipesut || true ) \
+    # Drop DWARF debug info from the static archive: RelWithDebInfo makes
+    # libaprapipes.a ~446MB, almost all debug data. --strip-debug keeps every
+    # symbol needed to link against it (so this image stays usable as a build
+    # base) while shrinking it to ~27MB.
+    && ( strip --strip-debug /opt/aprapipes/lib/libaprapipes.a || true )
 
 ########################  Stage 2: slim runtime  ##############################
-# Runtime flavour of the same CUDA/cuDNN — no compilers, no toolkit dev files.
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04 AS runtime
+# Runtime flavour of the same CUDA — no compilers, no toolkit dev files.
+# NOTE: the plain -runtime base (no -cudnn8): aprapipes does not use cuDNN
+# (0 cuDNN symbols in libaprapipes.a, aprapipesut links NPP not cuDNN), so the
+# cudnn8 variant only added ~1.1GB of unused libcudnn_*.so. cuDNN dev files are
+# still present in the builder stage, which is all the vcpkg build needs.
+FROM nvidia/cuda:11.8.0-runtime-ubuntu20.04 AS runtime
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -133,6 +142,15 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
 
 # Built library + headers + cmake config + the test executable.
 COPY --from=builder /opt/aprapipes /opt/aprapipes
+
+# Ship the full vcpkg dependency tree (OpenCV-CUDA, Boost, ffmpeg, libmp4 -> libmp4lib.a,
+# redis++, ...) built above. This lets downstream projects (e.g. the snapshot service)
+# link against these deps WITHOUT re-running vcpkg or recompiling from source — they
+# point CMAKE_PREFIX_PATH at this tree. It is ABI-consistent with /opt/aprapipes (same
+# 11.8 toolchain, same build). NOTE: this adds several GB to the image; to slim it, drop
+# the debug half with:  rm -rf /opt/aprapipes/vcpkg_installed/x64-linux/debug
+COPY --from=builder /src/_build/vcpkg_installed /opt/aprapipes/vcpkg_installed
+
 ENV PATH=/opt/aprapipes/bin:${PATH}
 
 # Ask the NVIDIA Container Toolkit to expose GPU + NVDEC/NVENC + compute at run.
