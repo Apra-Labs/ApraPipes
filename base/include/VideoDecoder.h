@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "Module.h"
 #include <vector>
 
@@ -23,6 +25,8 @@ public:
 	bool init();
 	bool term();
 	bool processEOS(string& pinId);
+	bool isEOSProcessed() const { return mEOSProcessed.load(); }
+	int getConsecutiveErrors() const;
 
 protected:
 	bool process(frame_container& frames);
@@ -39,6 +43,7 @@ private:
 
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
+	std::atomic<bool> mEOSProcessed{false};
 	bool mShouldTriggerSOS;
 	bool mHelperReady;
 	framemetadata_sp mOutputMetadata;
