@@ -185,6 +185,7 @@ public:
         bool got_eos;
         bool op_streamon;
         bool cp_streamon;
+        bool first_op_buf_queued = false;
         int fd;
         int dst_dma_fd;
         int dmabuff_fd[MAX_BUFFERS];
@@ -389,9 +390,11 @@ public:
 
     int process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS);
 
-    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame);
+    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame, uint32_t decode_pixfmt = V4L2_PIX_FMT_H264);
 
     bool initializeDecoder();
+
+    bool startStreamAndCaptureThread();
 
     void closeAllThreads(frame_sp eosFrame);
 

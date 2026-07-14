@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.29)
-
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
@@ -71,9 +70,14 @@ IF(ENABLE_ARM64 OR ENABLE_ARM_WITHOUT_JETSON)
 	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64 OR ENABLE_ARM_WITHOUT_JETSON)
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+ELSEIF(ENABLE_ARM64)
+	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
+	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
+	# Only check GTK3 for ARM64 - GDK3 linking causes faciallandmarks test crash
+	pkg_check_modules(GTK3 gtk+-3.0)  # Made optional for test build - no REQUIRED
 ENDIF()
 
 IF(ENABLE_CUDA)
@@ -256,6 +260,7 @@ SET(CORE_FILES_H
 	include/MultimediaQueueXform.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/H265Metadata.h
 	include/Mp4ReaderSource.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
@@ -282,12 +287,14 @@ SET(GENERIC_FILES
 	src/H264FrameDemuxer.cpp
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
+	src/H265Utils.cpp
 	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
 	include/H264ParserUtils.h
 	include/H264Utils.h
+	include/H265Utils.h
 	include/RTSPPusher.h
 	include/QRReader.h
 )
@@ -405,6 +412,8 @@ SET(CUDA_IP_FILES
 	src/ResizeNPPI.cpp
 	# src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
+	src/H265Decoder.cpp
+	src/VideoDecoder.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -454,6 +463,8 @@ SET(CUDA_IP_FILES_H
 	include/OverlayKernel.h
 	include/RotateNPPI.h
 	include/H264Decoder.h
+	include/H265Decoder.h
+	include/VideoDecoder.h
 )
 
 IF(ENABLE_ARM64)
@@ -546,6 +557,8 @@ IF (ENABLE_ARM64)
 		# test/apraegldisplay_tests.cpp
 		# test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
+		test/h265decoder_tests.cpp
+		test/videodecoder_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -570,6 +583,7 @@ IF (ENABLE_CUDA)
 			test/nv_mp4_file_tests.cpp
 			test/nv_test_utils.h
 			test/h264decoder_tests.cpp
+			test/h265decoder_tests.cpp
 		)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)

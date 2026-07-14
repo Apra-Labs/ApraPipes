@@ -5,6 +5,7 @@
 class Mp4ReaderDetailAbs;
 class Mp4ReaderDetailJpeg;
 class Mp4ReaderDetailH264;
+class Mp4ReaderDetailH265;
 
 class Mp4ReaderSourceProps : public ModuleProps
 {
@@ -140,6 +141,7 @@ protected:
 	bool handlePausePlay(float speed, bool direction) override;
 private:
 	std::string h264ImagePinId;
+	std::string h265ImagePinId;
 	std::string encodedImagePinId;
 	uint32_t mWidth = 0;
 	uint32_t mHeight = 0;

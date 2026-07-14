@@ -3,7 +3,7 @@
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "Logger.h"
-#include "H264Decoder.h"
+#include "VideoDecoder.h"
 #include "test_utils.h"
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(mem_leak_test)
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	auto Decoder = boost::shared_ptr<VideoDecoder>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(sample_mp4_file_decoder_cuda_device_to_host, * boost::unit_
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(decoder_termination_timeout_reproduction, * boost::unit_tes
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	auto Decoder = boost::shared_ptr<Module>(new VideoDecoder(VideoDecoderProps()));
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
 	mp4Reader->setNext(Decoder, mImagePin);

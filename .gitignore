@@ -5,3 +5,8 @@ thirdparty/gst-build/gst-build-1.16
 base/vcpkg_installed
 base/vcpkg.json
 CI_test_result*.xml
+CLAUDE.md
+
+base/build/
+build/
+build_snap/
