@@ -241,10 +241,14 @@ void Mp4WriterSinkUtils::getFilenameForNextFrame(std::string& nextFrameFileName 
 	if (frameType == FrameMetadata::FrameType::H264_DATA)
 	{
 		parseTSH264(timestamp, chunkTimeInMinutes, syncTimeInSeconds, relPath, mp4FileName, syncFlag, frameType, naluType, basefolder, nextFrameFileName);
+		LOG_INFO << "getFilenameForNextFrame: ts <" << timestamp << "> naluType <" << naluType
+			<< "> file <" << nextFrameFileName << ">";
 	}
 	else if (frameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 	{
 		parseTSJpeg(timestamp, chunkTimeInMinutes, syncTimeInSeconds, relPath, mp4FileName, syncFlag, basefolder, nextFrameFileName);
+		LOG_INFO << "getFilenameForNextFrame: ts <" << timestamp
+			<< "> file <" << nextFrameFileName << ">";
 	}
 	
 }

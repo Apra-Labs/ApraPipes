@@ -199,7 +199,9 @@ public:
     uint32_t timescale = 30000;
     now = std::time(nullptr);
 
+    LOG_INFO<<"creating new mp4 mux handle";
     auto ret = mp4_mux_open(filename.c_str(), timescale, now, now, &mux);
+      LOG_INFO<<"creat new mp4 mux handle";
     if (mMetadataEnabled) {
       /* \251too -> �too */
       std::string key = "\251too";
@@ -254,13 +256,20 @@ public:
     }
   }
 
-  bool attemptFileClose() {
+ bool attemptFileClose() {
+    LOG_INFO << "attempting mp4 file close";
     if (mux) {
-      mp4_mux_close(mux);
-      mux = nullptr;
+        LOG_INFO << "closing mp4 file";
+        mp4_mux_close(mux);
+        LOG_INFO << "closed mp4 file";
+        mux = nullptr;
     }
+    mNextFrameFileName = "";
+    lastFrameTS = 0;
+    mWriterSinkUtils.resetCache();
     return true;
-  }
+}
+
 
   bool shouldTriggerSOS() { return !mInputMetadata.get(); }
 
@@ -390,6 +399,7 @@ bool DetailJpeg::write(frame_container &frames) {
 
   if (mNextFrameFileName != _nextFrameFileName) {
     mNextFrameFileName = _nextFrameFileName;
+    LOG_INFO<<"opening new file with filename:"<<mNextFrameFileName;
     initNewMp4File(mNextFrameFileName);
   }
 
@@ -535,6 +545,7 @@ bool DetailH264::write(frame_container &frames) {
   size_t frameSize;
   if (mNextFrameFileName != _nextFrameFileName) {
     mNextFrameFileName = _nextFrameFileName;
+    LOG_INFO<<"opening new file with filename:"<<mNextFrameFileName;
     initNewMp4File(mNextFrameFileName);
     if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE ||
         naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) {
