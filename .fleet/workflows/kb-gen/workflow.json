@@ -1,0 +1,5 @@
+{
+  "name": "kb-gen",
+  "entry": "main.mjs",
+  "description": "Deep-scan a repo and generate Knowledge Bank entries"
+}
