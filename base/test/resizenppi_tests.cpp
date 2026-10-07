@@ -10,6 +10,7 @@
 #include "AIPExceptions.h"
 #include "CudaMemCopy.h"
 #include "ResizeNPPI.h"
+#include "RawImagePlanarMetadata.h"
 #include "test_utils.h"
 #include "nv_test_utils.h"
 
@@ -146,6 +147,52 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_tests_yuv420_640x360_to_320x180.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(yuv420_640x360_upscale, *utf::precondition(if_compute_cap_supported()))
+{
+        auto width = 640;
+        auto height = 360;
+
+        auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+        auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+
+        auto rawImagePin = fileReader->addOutputPin(metadata);
+
+        auto stream = cudastream_sp(new ApraCudaStream);
+        auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+        fileReader->setNext(copy1);
+
+        auto m2 = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(width * 2, height * 2, stream)));
+        copy1->setNext(m2);
+        auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+        m2->setNext(copy2);
+        auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+
+        auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+        copy2->setNext(m3);
+
+        BOOST_TEST(fileReader->init());
+        BOOST_TEST(copy1->init());
+        BOOST_TEST(m2->init());
+        BOOST_TEST(copy2->init());
+        BOOST_TEST(m3->init());
+
+        fileReader->step();
+        copy1->step();
+        m2->step();
+        copy2->step();
+        auto frames = m3->pop();
+        BOOST_TEST((frames.find(outputPinId) != frames.end()));
+
+        auto outFrame = frames[outputPinId];
+        BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+
+        auto outputMetadata =
+            FrameMetadataFactory::downcast<RawImagePlanarMetadata>(outFrame->getMetadata());
+
+        BOOST_TEST(outputMetadata->getWidth(0) == width * 2);
+        BOOST_TEST(outputMetadata->getHeight(0) == height * 2);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())

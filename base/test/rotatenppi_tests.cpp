@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -12,6 +13,8 @@
 #include "RotateNPPI.h"
 #include "test_utils.h"
 #include "nv_test_utils.h"
+
+namespace bdata = boost::unit_test::data;
 
 BOOST_AUTO_TEST_SUITE(rotatenppi_tests)
 
@@ -60,34 +63,22 @@ void test(std::string filename, int width, int height, ImageMetadata::ImageType 
 	BOOST_TEST(m3->term());
 }
 
-BOOST_AUTO_TEST_CASE(mono_8U_90_cc, *utf::precondition(if_compute_cap_supported()))
+BOOST_TEST_DECORATOR(*utf::precondition(if_compute_cap_supported()))
+BOOST_DATA_TEST_CASE(mono_8U_rotation, bdata::make({0, 90, 180, 270, 360, -90, -180, -270, -360}), angle)
 {
-	test("mono_1920x1080", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, 90);
+        test("mono_1920x1080", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, angle);
 }
 
-BOOST_AUTO_TEST_CASE(mono_8U_90_c, *utf::precondition(if_compute_cap_supported()))
+BOOST_TEST_DECORATOR(*utf::precondition(if_compute_cap_supported()))
+BOOST_DATA_TEST_CASE(mono_16U_rotation, bdata::make({0, 90, 180, 270, 360, -90, -180, -270, -360}), angle)
 {
-	test("mono_1920x1080", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, -90);
+        test("depth_1280x720", 1280, 720, ImageMetadata::ImageType::MONO, CV_16UC1, CV_16U, angle);
 }
 
-BOOST_AUTO_TEST_CASE(mono_16U_90_cc, *utf::precondition(if_compute_cap_supported()))
+BOOST_TEST_DECORATOR(*utf::precondition(if_compute_cap_supported()))
+BOOST_DATA_TEST_CASE(rgb_8U_rotation, bdata::make({0, 90, 180, 270, 360, -90, -180, -270, -360}), angle)
 {
-	test("depth_1280x720", 1280, 720, ImageMetadata::ImageType::MONO, CV_16UC1, CV_16U, 90);
-}
-
-BOOST_AUTO_TEST_CASE(mono_16U_90_c, *utf::precondition(if_compute_cap_supported()))
-{
-	test("depth_1280x720", 1280, 720, ImageMetadata::ImageType::MONO, CV_16UC1, CV_16U, -90);
-}
-
-BOOST_AUTO_TEST_CASE(rgb_8U_90_cc, *utf::precondition(if_compute_cap_supported()))
-{
-	test("frame_1280x720_rgb", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, 90);
-}
-
-BOOST_AUTO_TEST_CASE(rgb_8U_90_c, *utf::precondition(if_compute_cap_supported()))
-{
-	test("frame_1280x720_rgb", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, -90);
+        test("frame_1280x720_rgb", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, angle);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())

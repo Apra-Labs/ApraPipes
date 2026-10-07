@@ -10,6 +10,8 @@
 
 #include "npp.h"
 
+#include <cmath>
+
 class RotateNPPI::Detail
 {
 public:
@@ -17,10 +19,33 @@ public:
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 
-		if (abs(props.angle) != 90)
-		{
-			throw AIPException(AIP_NOTIMPLEMENTED, "Only 90 degree rotation supported currently.");
-		}
+		props.angle = fmod(props.angle, 360.0);
+
+                if (props.angle < 0)
+                {
+                        props.angle += 360.0;
+                }
+
+                if (props.angle == 270.0)
+                {
+                        props.angle = -90.0;
+                }
+                else if (props.angle == 180.0)
+                {
+                        props.angle = 180.0;
+                }
+                else if (props.angle == 90.0)
+                {
+                        props.angle = 90.0;
+                }
+                else if (props.angle == 0.0)
+                {
+                        props.angle = 0.0;
+                }
+                else
+                {
+                        throw AIPException(AIP_NOTIMPLEMENTED, "Only multiples of 90 degrees are supported.");
+                }
 	}
 
 	~Detail()
@@ -55,7 +80,16 @@ public:
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-			RawImageMetadata outputMetadata(rawMetadata->getHeight(), rawMetadata->getWidth(), rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
+			int outputWidth = rawMetadata->getWidth();
+                        int outputHeight = rawMetadata->getHeight();
+
+                        if (props.angle == 90 || props.angle == -90)
+                        {
+                                outputWidth = rawMetadata->getHeight();
+                                outputHeight = rawMetadata->getWidth();
+                        }
+
+                        RawImageMetadata outputMetadata(outputWidth, outputHeight, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata); // new function required
 			imageType = rawMetadata->getImageType();
@@ -104,7 +138,7 @@ public:
 		auto status = NPP_SUCCESS;
 
 		// assuming raw_image - planar not supported
-		if (channels == 1 && depth == CV_8UC1)
+		if (channels == 1 && depth == CV_8U)
 		{
 			status = nppiRotate_8u_C1R_Ctx(const_cast<const Npp8u *>(static_cast<Npp8u *>(buffer)),
 										   srcSize[0],
@@ -119,7 +153,7 @@ public:
 										   NPPI_INTER_NN,
 										   nppStreamCtx);
 		}
-		else if (channels == 1 && depth == CV_16UC1)
+		else if (channels == 1 && depth == CV_16U)
 		{
 			status = nppiRotate_16u_C1R_Ctx(const_cast<const Npp16u *>(static_cast<Npp16u *>(buffer)),
 											srcSize[0],
@@ -204,20 +238,30 @@ private:
 			}
 		}
 
-		if (props.angle == 90)
-		{
-			shiftX = 0;
-			shiftY = dstSize[0].height - 1;
-		}
-		else if (props.angle == -90)
-		{
-			shiftX = dstSize[0].width - 1;
-			shiftY = 0;
-		}
-		else
-		{
-			throw AIPException(AIP_NOTIMPLEMENTED, "currently rotation only 90 or -90 is supported");
-		}
+		if (props.angle == 0)
+                {
+                        shiftX = 0;
+                        shiftY = 0;
+                }
+                else if (props.angle == 90)
+                {
+                        shiftX = 0;
+                        shiftY = dstSize[0].height - 1;
+                }
+                else if (props.angle == -90)
+                {
+                        shiftX = dstSize[0].width - 1;
+                        shiftY = 0;
+                }
+                else if (props.angle == 180)
+                {
+                        shiftX = dstSize[0].width - 1;
+                        shiftY = dstSize[0].height - 1;
+                }
+                else
+                {
+                        throw AIPException(AIP_NOTIMPLEMENTED, "Only multiples of 90 degrees are supported.");
+                }
 
 		return true;
 	}
