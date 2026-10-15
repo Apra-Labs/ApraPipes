@@ -102,6 +102,46 @@ private:
 	}
 };
 
+// Error codes raised through the error callback (APErrorObject::getErrorCode())
+// when writing to storage fails or recovers. Raised once per state change, not
+// once per failed frame.
+namespace Mp4WriterSinkErrors
+{
+	enum Code : int
+	{
+		DISK_FULL = 7001,  // no space left on the recording filesystem (ENOSPC / EDQUOT)
+		DISK_ERROR = 7002, // any other storage failure (EIO, EROFS, ENOENT, EACCES, ...)
+		RECOVERED = 7003   // a sync to disk succeeded after DISK_FULL / DISK_ERROR
+	};
+}
+
+enum class Mp4WriteFailure
+{
+	NONE,      // success, or a failure that is not about storage (e.g. ENOMEM, EINVAL)
+	DISK_FULL,
+	DISK_ERROR
+};
+
+// Tracks the storage state of an Mp4WriterSink and decides which error code, if
+// any, to raise for each write / sync result.
+class Mp4WriteHealth
+{
+public:
+	// err:        positive errno-style code of the failed call.
+	// savedErrno: errno captured right after the call. libmp4 reports a failed
+	//             sample write as EIO; the real cause (e.g. ENOSPC) is still in errno.
+	static Mp4WriteFailure classify(int err, int savedErrno);
+
+	// Returns the error code to raise for this failure, or 0 when the state is unchanged.
+	int onFailure(Mp4WriteFailure failure);
+	// Returns RECOVERED when the writer was in a failed state, otherwise 0.
+	int onSuccessfulSync();
+	Mp4WriteFailure state() const { return mState; }
+
+private:
+	Mp4WriteFailure mState = Mp4WriteFailure::NONE;
+};
+
 class Mp4WriterSink : public Module
 {
 public:
@@ -126,6 +166,7 @@ protected:
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool enableMp4Metadata(framemetadata_sp &inputMetadata);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
+	void raisePendingStorageErrors();
 
 	boost::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;

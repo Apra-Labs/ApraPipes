@@ -610,6 +610,7 @@ SET(UT_FILES
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
 	test/mp4writersink_tests.cpp
+	test/mp4writersink_storage_errors_tests.cpp
 	test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
 	test/valveModule_tests.cpp

@@ -1,5 +1,8 @@
+#include <cerrno>
+#include <cstring>
 #include <ctime>
 #include <fstream>
+#include <boost/filesystem.hpp>
 
 #include "EncodedImageMetadata.h"
 #include "Frame.h"
@@ -12,6 +15,46 @@
 #include "Mp4WriterSinkUtils.h"
 #include "PropsChangeMetadata.h"
 #include "libmp4.h"
+
+static bool isNoSpaceErrno(int err) {
+  if (err == ENOSPC)
+    return true;
+#ifdef EDQUOT
+  if (err == EDQUOT)
+    return true;
+#endif
+  return false;
+}
+
+Mp4WriteFailure Mp4WriteHealth::classify(int err, int savedErrno) {
+  if (err <= 0)
+    return Mp4WriteFailure::NONE;
+  // libmp4 argument / allocation failures: not a storage problem.
+  if (err == ENOMEM || err == EINVAL || err == ENOBUFS)
+    return Mp4WriteFailure::NONE;
+  if (isNoSpaceErrno(err))
+    return Mp4WriteFailure::DISK_FULL;
+  // libmp4 turns every failed fwrite into EIO; the OS's reason is in errno.
+  if (err == EIO && isNoSpaceErrno(savedErrno))
+    return Mp4WriteFailure::DISK_FULL;
+  return Mp4WriteFailure::DISK_ERROR;
+}
+
+int Mp4WriteHealth::onFailure(Mp4WriteFailure failure) {
+  if (failure == Mp4WriteFailure::NONE || failure == mState)
+    return 0;
+  mState = failure;
+  return failure == Mp4WriteFailure::DISK_FULL
+             ? Mp4WriterSinkErrors::DISK_FULL
+             : Mp4WriterSinkErrors::DISK_ERROR;
+}
+
+int Mp4WriteHealth::onSuccessfulSync() {
+  if (mState == Mp4WriteFailure::NONE)
+    return 0;
+  mState = Mp4WriteFailure::NONE;
+  return Mp4WriterSinkErrors::RECOVERED;
+}
 
 class DTSCalcStrategy {
 public:
@@ -189,9 +232,11 @@ public:
     return mMetadataEnabled;
   }
 
-  void initNewMp4File(std::string &filename) {
+  // Returns false when the file could not be opened; mux is then null and the
+  // next frame retries.
+  bool initNewMp4File(std::string &filename) {
     if (mux) {
-      mp4_mux_close(mux);
+      closeMux();
     }
     syncFlag = false;
     lastFrameTS = 0;
@@ -201,6 +246,13 @@ public:
 
     LOG_INFO<<"creating new mp4 mux handle";
     auto ret = mp4_mux_open(filename.c_str(), timescale, now, now, &mux);
+    int savedErrno = errno;
+    if (ret < 0) {
+      mux = nullptr;
+      onStorageResult(ret, savedErrno, "open", filename);
+      return false;
+    }
+    mOpenFileName = filename;
       LOG_INFO<<"creat new mp4 mux handle";
     if (mMetadataEnabled) {
       /* \251too -> �too */
@@ -254,15 +306,73 @@ public:
         }
       }
     }
+    return true;
+  }
+
+  // mp4_mux_close writes the moov box, so it can fail like any other write.
+  void closeMux() {
+    int ret = mp4_mux_close(mux);
+    int savedErrno = errno;
+    mux = nullptr;
+    onStorageResult(ret, savedErrno, "close", mOpenFileName);
+  }
+
+  void syncMux() {
+    int ret = mp4_mux_sync(mux);
+    int savedErrno = errno;
+    onSyncResult(ret, savedErrno);
+  }
+
+  // ret: libmp4 return value (negative errno on failure). savedErrno: errno
+  // captured immediately after the call, before anything else can change it.
+  void onStorageResult(int ret, int savedErrno, const char *op,
+                       const std::string &file) {
+    if (ret >= 0)
+      return;
+    int err = -ret;
+    auto failure = Mp4WriteHealth::classify(err, savedErrno);
+    if (failure == Mp4WriteFailure::NONE) {
+      LOG_ERROR << "mp4 " << op << " failed <" << file
+                << ">: " << std::strerror(err);
+      return;
+    }
+    mFailedStorageOps++;
+    int code = mHealth.onFailure(failure);
+    if (!code)
+      return;
+    std::string cause = std::strerror(err);
+    if (err == EIO && savedErrno && savedErrno != EIO)
+      cause += std::string(" (") + std::strerror(savedErrno) + ")";
+    std::string msg =
+        std::string(failure == Mp4WriteFailure::DISK_FULL ? "MP4Writer disk full"
+                                                          : "MP4Writer disk error") +
+        " during " + op + " <" + file + ">: " + cause;
+    LOG_ERROR << msg;
+    mPendingStorageErrors.emplace_back(code, msg);
+  }
+
+  void onSyncResult(int ret, int savedErrno) {
+    if (ret < 0) {
+      onStorageResult(ret, savedErrno, "sync", mOpenFileName);
+      return;
+    }
+    int code = mHealth.onSuccessfulSync();
+    if (!code)
+      return;
+    std::string msg = "MP4Writer storage recovered <" + mOpenFileName +
+                      ">, " + std::to_string(mFailedStorageOps) +
+                      " failed writes while it was down";
+    LOG_INFO << msg;
+    mFailedStorageOps = 0;
+    mPendingStorageErrors.emplace_back(code, msg);
   }
 
  bool attemptFileClose() {
     LOG_INFO << "attempting mp4 file close";
     if (mux) {
         LOG_INFO << "closing mp4 file";
-        mp4_mux_close(mux);
+        closeMux();
         LOG_INFO << "closed mp4 file";
-        mux = nullptr;
     }
     mNextFrameFileName = "";
     lastFrameTS = 0;
@@ -309,8 +419,16 @@ public:
   struct mp4_mux *mux;
   bool syncFlag = false;
   uint64_t lastWrittenFrameTS = 0;
+  Mp4WriteHealth mHealth;
+  // Storage state changes waiting to be raised through the error callback.
+  std::vector<APErrorObject> mPendingStorageErrors;
 
 protected:
+  uint64_t mFailedStorageOps = 0;
+  std::string mOpenFileName;
+  // Set when a new file could not be opened: H264 frames are dropped until the
+  // next key frame so the retried file starts decodable.
+  bool mDropUntilKeyFrame = false;
   int videotrack;
   int metatrack;
   int audiotrack;
@@ -405,7 +523,7 @@ bool DetailJpeg::write(frame_container &frames) {
 
   if (syncFlag) {
     LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
-    auto ret = mp4_mux_sync(mux);
+    syncMux();
     syncFlag = false;
   }
 
@@ -428,7 +546,8 @@ bool DetailJpeg::write(frame_container &frames) {
       mux_sample.dts +
       static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
 
-  mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
+  int ret = mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
+  onStorageResult(ret, errno, "write", mOpenFileName);
 
   if (metatrack != -1 && mMetadataEnabled) {
     if (inMp4MetaFrame.get() && inMp4MetaFrame->fIndex == 0) {
@@ -439,7 +558,8 @@ bool DetailJpeg::write(frame_container &frames) {
       mux_sample.len = 0;
     }
 
-    mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+    ret = mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+    onStorageResult(ret, errno, "write", mOpenFileName);
   }
   return true;
 }
@@ -528,6 +648,14 @@ bool DetailH264::write(frame_container &frames) {
     return true;
   }
 
+  if (mDropUntilKeyFrame) {
+    if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE &&
+        naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM) {
+      return true;
+    }
+    mDropUntilKeyFrame = false;
+  }
+
   std::string _nextFrameFileName;
   mWriterSinkUtils.getFilenameForNextFrame(
       _nextFrameFileName, inH264ImageFrame->timestamp, mProps->baseFolder,
@@ -584,7 +712,7 @@ bool DetailH264::write(frame_container &frames) {
 
   if (syncFlag) {
     LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
-    auto ret = mp4_mux_sync(mux);
+    syncMux();
     syncFlag = false;
   }
 
@@ -612,8 +740,9 @@ bool DetailH264::write(frame_container &frames) {
       mux_sample.dts +
       static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
 
-  mp4_mux_track_add_sample_with_prepend_buffer(mux, videotrack, &prepend_buffer,
-                                               &mux_sample);
+  int muxRet = mp4_mux_track_add_sample_with_prepend_buffer(
+      mux, videotrack, &prepend_buffer, &mux_sample);
+  onStorageResult(muxRet, errno, "write", mOpenFileName);
 
   if (metatrack != -1 && mMetadataEnabled) {
     // null check must happen here to ensure 0 sized entries in mp4 metadata
@@ -626,7 +755,8 @@ bool DetailH264::write(frame_container &frames) {
       mux_sample.buffer = nullptr;
       mux_sample.len = 0;
     }
-    mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+    muxRet = mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+    onStorageResult(muxRet, errno, "write", mOpenFileName);
   }
   return true;
 }
@@ -760,7 +890,18 @@ bool Mp4WriterSink::shouldTriggerSOS() { return mDetail->shouldTriggerSOS(); }
 
 bool Mp4WriterSink::term() {
   mDetail->attemptFileClose();
+  raisePendingStorageErrors();
   return true;
+}
+
+void Mp4WriterSink::raisePendingStorageErrors() {
+  if (!mDetail || mDetail->mPendingStorageErrors.empty())
+    return;
+  std::vector<APErrorObject> errors;
+  errors.swap(mDetail->mPendingStorageErrors);
+  for (auto &error : errors) {
+    executeErrorCallback(error);
+  }
 }
 
 bool Mp4WriterSink::process(frame_container &frames) {
@@ -775,11 +916,19 @@ bool Mp4WriterSink::process(frame_container &frames) {
       mDetail->lastWrittenFrameTS = frames.begin()->second->timestamp;
     }
     LOG_TRACE << "MP4Writer: TS " << mDetail->lastWrittenFrameTS;
+  } catch (const boost::filesystem::filesystem_error &e) {
+    // Creating the recording directory failed (read-only, no space, ...).
+    LOG_ERROR << e.what();
+    auto cond = e.code().default_error_condition();
+    int err = cond.category() == boost::system::generic_category() ? cond.value() : EIO;
+    mDetail->onStorageResult(-err, err, "create directory", e.path1().string());
+    mDetail->attemptFileClose();
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
     // close any open file
     mDetail->attemptFileClose();
   }
+  raisePendingStorageErrors();
   return true;
 }
 
@@ -811,7 +960,12 @@ void Mp4WriterSink::setProps(Mp4WriterSinkProps &props) {
 
 bool Mp4WriterSink::doMp4MuxSync() {
   auto ret = mp4_mux_sync(mDetail->mux);
+  int savedErrno = errno;
   mDetail->syncFlag = false;
+  if (mDetail->mux) {
+    mDetail->onSyncResult(ret, savedErrno);
+    raisePendingStorageErrors();
+  }
   return ret;
 }
 
@@ -828,7 +982,9 @@ bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp &frame)
     Mp4WriterFileCloseCommand mp4FileCloseCmd;
     getCommand(mp4FileCloseCmd, frame);
     mDetail->lastWrittenFrameTS = 0;
-    return mDetail->attemptFileClose();
+    bool closed = mDetail->attemptFileClose();
+    raisePendingStorageErrors();
+    return closed;
   }
   else
   {
